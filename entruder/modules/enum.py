@@ -1,5 +1,6 @@
 import typer
 from rich.console import Console
+from entruder.helpers import parse_xml_tag
 import xml.etree.ElementTree as etree
 import httpx
 
@@ -27,21 +28,17 @@ def enum_tenant(
         root = etree.fromstring(userrealm_xml.text)
 
         # printing the userrealm information
-        def get(tag):
-            el = root.find(tag)
-            return el.text if el is not None else "N/A"
-        
         console.print(f"[bold]Domain:[/]         {domain}")
         console.print(f"[bold]Tenant ID:[/]      {tenant_id}")
         console.print(f"[bold]Token Endpoint:[/] {token_endpoint}")
         console.print(f"[bold]Tenant Region:[/]  {tenant_region_scope}")
         console.print(f"[bold]MsGraph Host:[/]   {msgraph_host}")
-        console.print(f"[bold]Namespace:[/]      {get('NameSpaceType')}")
-        console.print(f"[bold]Brand Name:[/]     {get('FederationBrandName')}")
-        console.print(f"[bold]Cloud:[/]          {get('CloudInstanceName')}")
-        console.print(f"[bold]Auth URL:[/]       {get('AuthURL')}")
-        console.print(f"[bold]DSSO Enabled:[/]   {get('IsDssoEnabled')}")
-        console.print(f"[bold]Federated:[/]      {get('NameSpaceType') == 'Federated'}")
+        console.print(f"[bold]Namespace:[/]      {parse_xml_tag(root,'NameSpaceType')}")
+        console.print(f"[bold]Brand Name:[/]     {parse_xml_tag(root,'FederationBrandName')}")
+        console.print(f"[bold]Cloud:[/]          {parse_xml_tag(root,'CloudInstanceName')}")
+        console.print(f"[bold]Auth URL:[/]       {parse_xml_tag(root,'AuthURL')}")
+        console.print(f"[bold]DSSO Enabled:[/]   {parse_xml_tag(root,'IsDssoEnabled')}")
+        console.print(f"[bold]Federated:[/]      {parse_xml_tag(root,'NameSpaceType') == 'Federated'}")
     except Exception:
         console.print(f"[bold red][-][/] Could not reach tenant for domain: {domain}")
         raise typer.Exit(1)
