@@ -5,8 +5,11 @@ def save_session(tenant: str, client_id: str, tokens: dict, refresh_token: str=N
     from entruder.globals import SESSIONS_DIR
     import json
 
-    session_file = SESSIONS_DIR / f"{tenant}.json"
-    
+    # one session file per identity (tenant + client) so tokens acquired as
+    # different clients — e.g. across the FOCI family — don't overwrite each other
+    safe_client = "".join(c if c.isalnum() or c in "-_" else "_" for c in client_id)
+    session_file = SESSIONS_DIR / f"{tenant}_{safe_client}.json"
+
     # load existing
     existing = {}
     if session_file.exists():

@@ -62,3 +62,12 @@ ERROR_CODES = {
     "AADSTS90014":   "Missing required field in the request",
 }
 
+FOCI_CLIENTS = {
+    "azure_cli":        "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    "azure_powershell": "1950a258-227b-4e31-a9cf-717495945fc2",
+    "teams":            "1fec8e78-bce4-4aaf-ab1b-5451cc387264",
+    "office":           "d3590ed6-52b3-4102-aeff-aad2292ab01c",
+    "onedrive":         "ab9b8c07-8f02-4f72-87fa-80105867a763",
+    "power_automate":   "27922004-5251-4030-b22d-91ecd9a37ea4",
+    "microsoft_edge":   "ecd6b820-32c2-49b6-98a6-444530e5a77a",
+}

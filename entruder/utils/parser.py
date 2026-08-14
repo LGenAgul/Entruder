@@ -2,9 +2,6 @@ import re
 import json
 import base64
 
-
-
-
 def parse_error(description: str) -> str:
      from entruder.globals import ERROR_CODES
      match = re.match(r"AADSTS\d+", description or "")
@@ -42,7 +39,6 @@ def resolve_resource(resource: str) -> str:
     from entruder.globals import PLANES
     return PLANES.get(resource, resource)
 
-# temporary, probably will make a class of this later
 def resolve_plane_from_resource(resource: str) -> str:
     from entruder.globals import RESOURCE_SHORTCUTS
     

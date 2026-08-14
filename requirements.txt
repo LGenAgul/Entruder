@@ -2,3 +2,4 @@ httpx
 typer
 msal
 rich
+cryptography

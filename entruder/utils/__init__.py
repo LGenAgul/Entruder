@@ -1,5 +1,6 @@
 from .http import request_json
 from .logging import vprint, report_error
+from .auth import build_cert_credential, device_login_v1, device_login_v2
 from .parser import (
     parse_error,
     parse_xml_tag,

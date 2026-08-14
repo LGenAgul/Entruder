@@ -1,9 +1,8 @@
 import typer
 from rich.console import Console
-from entruder.globals import PLANES, RESOURCE_SHORTCUTS
-from entruder.utils import csv_to_list, parse_error, parse_token, report_error, request_json, resolve_plane_from_resource, save_session, vprint
+from entruder.globals import PLANES, RESOURCE_SHORTCUTS, FOCI_CLIENTS
+from entruder.utils import build_cert_credential, device_login_v1, device_login_v2, parse_error, parse_token, report_error, request_json, resolve_plane_from_resource, save_session, vprint
 import msal
-import time
 
 login_app = typer.Typer(help="Login", no_args_is_help=True)
 console = Console()
@@ -147,105 +146,6 @@ def login_device(
 
 
 
-# temporarly store auth functions here
-def device_login_v1(resource, tenant, client_id) -> dict:
-    """
-    Authenticate using device code flow for v1 endpoint, done directly via raw http requests.
-    """
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                         "AppleWebKit/537.36 (KHTML, like Gecko) "
-                         "Chrome/103.0.0.0 Safari/537.36"
-    }
-    resource_url = RESOURCE_SHORTCUTS.get(resource, resource)
-    # Initialize device code flow to receive the user code
-    initial_response = request_json(
-            "POST",
-            f"https://login.microsoftonline.com/{tenant}/oauth2/devicecode",
-            params={"api-version": "1.0"},
-            data={
-                "client_id": client_id,
-                "resource": resource_url
-            },
-            headers=headers
-        )
-
-    if "user_code" not in initial_response:
-        console.print(f"[bold red][-][/] Failed to initiate device code flow: {parse_error(initial_response.get('error_description', 'Unknown error'))}")
-        raise typer.Exit(1)
-
-    interval = int(initial_response.get("interval", 5))
-    device_code = initial_response["device_code"]
-    # the device code is only valid for a limited window, stop polling once it expires
-    deadline = time.monotonic() + int(initial_response.get("expires_in", 900))
-
-    console.print(f"{initial_response['message']}")
-    vprint(f"Polling every {interval}s for up to {int(deadline - time.monotonic())}s")
-
-    # wait for the user to authenticate and poll for the access token
-    result = None
-    while time.monotonic() < deadline:
-        time.sleep(interval)
-        result = request_json(
-            "POST",
-            f"https://login.microsoftonline.com/{tenant}/oauth2/token",
-            data={
-                "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-                "client_id": client_id,
-                "resource": resource_url,
-                "code": device_code
-            },
-            headers=headers
-        )
-
-        if "access_token" in result:
-            return result
-
-        if "error" in result:
-            error = result["error"]
-            if error == "authorization_pending":
-                vprint("authorization_pending — user has not completed sign-in yet")
-                continue
-            elif error == "slow_down":
-                # AAD is telling us to back off, increase the interval as required
-                interval += 5
-                vprint(f"slow_down — backing off, interval now {interval}s")
-                continue
-            else:
-                console.print(f"[bold red][-][/] Error during token acquisition: {parse_error(result.get('error_description', 'Unknown error'))}")
-                raise typer.Exit(1)
-
-    console.print("[bold red][-][/] Device code expired before authentication completed.")
-    raise typer.Exit(1)
-        
-    
-
-
-
-def device_login_v2(tenant, client_id, scopes) -> dict:
-    """
-    Authenticate using device code flow for v2 endpoint, using MSAL library for handling the flow.
-    """
-    app = msal.PublicClientApplication(client_id, authority=f"https://login.microsoftonline.com/{tenant}")
-
-    vprint(f"Initiating v2 device flow (scopes={csv_to_list(scopes)})")
-    flow = app.initiate_device_flow(scopes=csv_to_list(scopes))
-    if "user_code" not in flow:
-        console.print(f"[bold red][-][/] Failed to initiate device code flow: {parse_error(flow.get('error_description', 'Unknown error'))}")
-        raise typer.Exit(1)
-
-    console.print(f"\n[bold yellow][*][/] {flow['message']}\n")
-
-    result = app.acquire_token_by_device_flow(flow)
-
-    if "access_token" not in result:
-        console.print(f"[bold red][-][/] Error during token acquisition: {parse_error(result.get('error_description', 'Unknown error'))}")
-        raise typer.Exit(1)
-
-    return result
-
-
-
 @login_app.command("refresh")
 def login_refresh(
      tenant: str = typer.Option(..., "-tenant", help="Tenant ID"),
@@ -304,9 +204,114 @@ def login_cert(
     client_id: str = typer.Option(...,  "-clientid", help="Client ID"),
     cert:      str = typer.Option(...,  "-cert",     help="Path to certificate file (.pem/.crt)"),
     key:       str = typer.Option(...,  "-key",      help="Path to private key file (.pem)"),
+    keypass:   str = typer.Option(None, "-keypass",  help="Passphrase for an encrypted private key (Optional)"),
     resource:  str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
     output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
 ):
     """
-    Authenticate using client certificate (certificate-based auth)
+    Authenticate with a Service Principal's client certificate (certificate-based auth)
     """
+    try:
+        tokens = {}
+        resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
+
+        # certificate credentials swap in for a secret; everything else mirrors `login secret`
+        authority = f"https://login.microsoftonline.com/{tenant}"
+        app = msal.ConfidentialClientApplication(
+            client_id=client_id,
+            client_credential=build_cert_credential(cert, key, keypass),
+            authority=authority
+        )
+        # acquiring tokens for each plane, packing them into a dictionary and saving to a session file
+        for res in resources:
+            plane = resolve_plane_from_resource(res)
+            scope = PLANES.get(plane)
+            vprint(f"Acquiring {plane} token (scope={scope})")
+            result = app.acquire_token_for_client(scopes=[scope])
+            if "access_token" in result:
+                tokens[plane] = parse_token(result)
+                vprint(f"{plane} token expires at {tokens[plane]['expires_at']}")
+                console.print(f"[bold green][+][/] {plane.capitalize()} Token acquired successfully!")
+                if output_tokens:
+                    console.print(f"[bold]Access Token:[/]\n{result['access_token']}\n")
+            else:
+                console.print(f"[bold red][-][/] Failed to acquire token for {plane.capitalize()}\n{parse_error(result.get('error_description', 'Unknown error'))}\n")
+                continue
+
+        # if the tokens dictionary is not empty, save the session
+        if tokens:
+            save_session(tenant, client_id, tokens)
+            console.print(f"[bold green][+][/] Session saved for tenant: {tenant}")
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        report_error(e, console)
+        raise typer.Exit(1)
+
+
+@login_app.command("foci")
+def login_foci(
+    tenant:        str = typer.Option(...,  "-tenant",  help="Tenant ID"),
+    refresh_token: str = typer.Option(...,  "-token",   help="Refresh token to test across FOCI family"),
+    resource:      str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
+    output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
+):
+    try:
+        resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
+        family = {}          # client name -> {plane: token} for every accepting client
+
+        for name, client_id in FOCI_CLIENTS.items():
+            # FOCI redeems the SAME original refresh token as each family member,
+            # independently — never carry a rotated RT across clients
+            rt = refresh_token
+            client_tokens = {}
+
+            for res in resources:
+                plane = resolve_plane_from_resource(res)
+                resource_url = RESOURCE_SHORTCUTS.get(res, res)
+                vprint(f"FOCI: redeeming RT as {name} ({client_id}) for {plane}")
+                result = request_json("POST",
+                    f"https://login.microsoftonline.com/{tenant}/oauth2/token",
+                    data={
+                        "grant_type":    "refresh_token",
+                        "client_id":     client_id,
+                        "refresh_token": rt,
+                        "resource":      resource_url,
+                    }
+                )
+
+                if "access_token" not in result:
+                    # a rejection just means this client is not a family member (or the
+                    # plane is unauthorized) — keep sweeping, do not abort
+                    vprint(f"{name}/{plane} rejected: {parse_error(result.get('error_description', result.get('error', 'unknown')))}")
+                    continue
+
+                token = parse_token(result)
+                client_tokens[plane] = token
+                # AAD may rotate the RT per redemption; chain the newest one within this client
+                if result.get("refresh_token"):
+                    rt = result["refresh_token"]
+                if output_tokens:
+                    console.print(f"[bold]{name} {plane} Access Token:[/]\n{token['value']}\n")
+
+            if client_tokens:
+                family[name] = client_tokens
+                # each family member is a distinct identity — save it under its own
+                # client_id so the per-identity session files don't overwrite each other
+                save_session(tenant, client_id, client_tokens)
+                console.print(f"[bold green][+][/] {name} ({client_id}) accepted — planes: {', '.join(client_tokens)}")
+            else:
+                console.print(f"[dim][-] {name} rejected the token[/dim]")
+
+        if not family:
+            console.print(f"[bold red][-][/] Not a FOCI refresh token — no family client accepted it")
+            raise typer.Exit(1)
+
+        console.print(f"\n[bold]{len(family)}/{len(FOCI_CLIENTS)} FOCI clients accepted the refresh token — sessions saved for tenant: {tenant}[/]")
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        report_error(e, console)
+        raise typer.Exit(1)
