@@ -1,3 +1,4 @@
 httpx
 typer
 msal
+rich
