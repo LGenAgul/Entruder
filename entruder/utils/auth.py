@@ -128,3 +128,5 @@ def device_login_v2(tenant, client_id, scopes) -> dict:
         raise typer.Exit(1)
 
     return result
+
+
