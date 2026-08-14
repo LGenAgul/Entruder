@@ -1,10 +1,17 @@
 from pathlib import Path
 
 PLANES = {
-    "Management": "https://management.azure.com/.default",
-    "Graph":       "https://graph.microsoft.com/.default",
-    "Storage":     "https://storage.azure.com/.default",
-    "KeyVault":    "https://vault.azure.com/.default",
+    "management": "https://management.azure.com/.default",
+    "graph":       "https://graph.microsoft.com/.default",
+    "storage":     "https://storage.azure.com/.default",
+    "keyvault":    "https://vault.azure.com/.default",
+}
+
+RESOURCE_SHORTCUTS = {
+    "graph":      "https://graph.microsoft.com/",
+    "management": "https://management.azure.com/",
+    "storage":    "https://storage.azure.com/",
+    "keyvault":   "https://vault.azure.com/",
 }
 
 CLIENT_IDS = {
