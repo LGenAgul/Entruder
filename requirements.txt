@@ -3,3 +3,4 @@ typer
 msal
 rich
 cryptography
+jsonschema

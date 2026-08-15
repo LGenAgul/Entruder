@@ -1,12 +1,54 @@
 
 from .logging import vprint
+from entruder.globals import SESSIONS_DIR,EXPIRY_BUFFER
+import json
+import time
+
+SESSION_SCHEMA = {
+    "type": "object",
+    "required": ["tenant", "client_id", "tokens"],
+    "properties": {
+        "tenant": {
+            "type": "string",
+            # every login command accepts -tenant as a GUID, a domain name
+            # (contoso.onmicrosoft.com), or one of AAD's multi-tenant aliases —
+            # a GUID-only pattern here rejects perfectly valid sessions
+            "pattern": "^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|common|organizations|consumers|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)$"
+        },
+        "client_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "upn": {
+            "type": ["string", "null"]
+        },
+        "refresh_token": {
+            "type": ["string", "null"]
+        },
+        "tokens": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "required": ["value", "expires_at"],
+                "properties": {
+                    "value": {"type": "string"},
+                    "expires_at": {"type": ["integer", "null"]},
+                    "wids": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "upn": {"type": ["string", "null"]}
+                }
+            }
+        }
+    }
+}
+
 
 def save_session(tenant: str, client_id: str, tokens: dict, refresh_token: str=None) -> None:
-    from entruder.globals import SESSIONS_DIR
-    import json
-
-    # one session file per identity (tenant + client) so tokens acquired as
-    # different clients — e.g. across the FOCI family — don't overwrite each other
+    """
+    The write operation for session files, labeled with ~/entruder/<TENANT_ID>+<CLIENT_ID>.json
+    """
     safe_client = "".join(c if c.isalnum() or c in "-_" else "_" for c in client_id)
     session_file = SESSIONS_DIR / f"{tenant}_{safe_client}.json"
 
@@ -34,3 +76,57 @@ def save_session(tenant: str, client_id: str, tokens: dict, refresh_token: str=N
     session_file.write_text(json.dumps(existing, indent=2))
     session_file.chmod(0o600)
     vprint(f"Session written to {session_file} (planes: {', '.join(existing_tokens)})")
+
+
+def get_session(tenant: str, client_id: str) -> dict:
+    """ Return the session file as json """
+    safe_client = "".join(c if c.isalnum() or c in "-_" else "_" for c in client_id)
+    session_file = SESSIONS_DIR / f"{tenant}_{safe_client}.json"
+    if not session_file.exists():
+        return {}
+    
+    with open(session_file,"r") as session:
+        return json.loads(session.read())
+
+def require_session(tenant: str, client_id: str, plane: str, console) -> str:
+    import typer
+
+    session = get_session(tenant, client_id)
+    if not session:
+        console.print(f"[bold red][-][/] No valid session found for {tenant} / {client_id}")
+        console.print(f"[dim] To receive a session run: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
+        raise typer.Exit(1)
+
+    if not validate_json(session):
+        console.print(f"[bold red][-][/] Session file corrupted/malformed, or contains incorrect data for {tenant} / {client_id}")
+        console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
+        raise typer.Exit(1)
+
+    if check_expired(session, plane):
+        console.print(f"[bold red][-][/] Session Expired for {tenant} / {client_id} on {plane} plane")
+        console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
+        raise typer.Exit(1)
+
+    token = session.get("tokens", {}).get(plane, {}).get("value")
+    if not token:
+        console.print(f"[bold red][-][/] No {plane} token in session")
+        console.print(f"[dim]    Run: entruder login <method> -tenant {tenant} -clientid {client_id} -resource {plane}[/dim]")
+        raise typer.Exit(1)
+    return token
+
+
+def validate_json(session: dict) -> bool:
+    from jsonschema import validate, ValidationError
+    try:
+        validate(instance=session, schema=SESSION_SCHEMA)
+        return True
+    except ValidationError as e:
+        return False
+
+
+def check_expired(session: dict, plane) -> bool:
+    expires_at = session.get("tokens",{}).get(plane,{}).get("expires_at")
+    now = int(time.time())
+    if expires_at and expires_at <= (now + EXPIRY_BUFFER):
+        return True
+    return False
