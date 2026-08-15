@@ -19,13 +19,6 @@ console = Console()
 
 
 def acquire_for_resources(resources: list, acquire, console, output_tokens=False, label=None) -> dict:
-    """
-    acquire(plane, res) does the actual IdP call and differs per command (MSAL
-    client-credentials, raw ROPC/refresh/kerberos POSTs, ...) so it's always
-    supplied by the caller. label covers the one thing that needs different
-    printing (FOCI prefixing every line with which family member it's for) —
-    a plain value instead of a callback, since that's all that ever varied.
-    """
     tokens = {}
     prefix = f"{label} " if label else ""
     for res in resources:
@@ -167,10 +160,7 @@ def device_login_v2(tenant, client_id, scopes) -> dict:
 
 def _catch_redirect(redirect_uri: str, timeout: int = 300) -> dict:
     """
-    Bind a short-lived local HTTP listener on redirect_uri's host/port, wait for
-    AAD's browser redirect to land on it, and return the callback's query params
-    (code, state, or error/error_description). Only used by the interactive flow —
-    redeeming an out-of-band code never touches this.
+    Bind a short-lived local HTTP listener on redirect_uri's host/port, wait for AAD's browser redirect to land on it, and return the callback's query params. Only used by the interactive flow with an out-of-band code never touches this.
     """
     parsed = urlparse(redirect_uri)
     host = parsed.hostname or "localhost"
@@ -215,8 +205,7 @@ def _catch_redirect(redirect_uri: str, timeout: int = 300) -> dict:
 
 def _interactive_auth_code(tenant, client_id, scope_param, redirect_uri, pkce, open_browser) -> tuple:
     """
-    Build the /authorize URL (with PKCE by default), drive the user to it, and
-    catch the resulting redirect. Returns (code, verifier) for the token exchange.
+    Build the /authorize URL (with PKCE by default), drive the user to it, and catch the resulting redirect. Returns (code, verifier) for the token exchange.
     """
     state = secrets.token_urlsafe(16)
     params = {
@@ -257,12 +246,6 @@ def auth_code_login(
     tenant, client_id, scopes, redirect_uri,
     client_secret=None, code=None, verifier=None, pkce=True, open_browser=True,
 ) -> dict:
-    """
-    Authenticate via the OAuth2 authorization code flow (v2 endpoint), PKCE by
-    default. If `code` is supplied, the interactive listener step is
-    skipped entirely and the code is redeemed directly. This is what lets an
-    operator exchange a code captured out-of-band without ever driving a browser through this tool.
-    """
     scope_list = csv_to_list(scopes)
     if any(s.endswith("/.default") or s == ".default" for s in scope_list):
         # .default (app-only, "whatever's statically configured") can't be mixed

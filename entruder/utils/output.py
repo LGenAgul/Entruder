@@ -17,17 +17,6 @@ class OutputFormat(str, Enum):
 
 
 def render(console, title: str, columns: list, records: list, output: OutputFormat = OutputFormat.table, xml_item_tag: str = "item") -> None:
-    """
-    Generic result renderer shared by every enum command. `columns` is an
-    ordered list of (label, key) tuples describing which fields to show in the
-    human-readable formats and what to call them; `records` is the raw list of
-    dicts as returned by the API (e.g. Graph objects).
-
-    table/csv use the column labels for a readable summary — that's the
-    "global default" view, same shape `enum users` already had. json/xml dump
-    the full raw records (every field the API returned, not just the selected
-    columns) so nothing is lost for tooling further down the pipeline.
-    """
     if output == OutputFormat.table:
         if not records:
             console.print("[bold yellow][*][/] No results")
@@ -79,7 +68,6 @@ def _cell(value) -> str:
 
 
 def _xml_safe_tag(name: str) -> str:
-    """XML element names can't start with a digit or contain spaces/symbols — sanitize."""
     safe = re.sub(r"[^A-Za-z0-9_.-]", "_", name)
     if not safe or safe[0].isdigit():
         safe = f"_{safe}"
