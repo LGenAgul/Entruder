@@ -41,9 +41,20 @@ def resolve_resource(resource: str) -> str:
 
 def resolve_plane_from_resource(resource: str) -> str:
     from entruder.globals import RESOURCE_SHORTCUTS
-    
+
     if resource in RESOURCE_SHORTCUTS:
         return resource
-    
+
     reverse = {v: k for k, v in RESOURCE_SHORTCUTS.items()}
     return reverse.get(resource, resource)
+
+def resolve_plane_from_scope(scope: str) -> str:
+    """
+    Derive the plane a v2-endpoint scope belongs to, e.g.
+    "https://graph.microsoft.com/.default" -> "graph". Falls back to the raw
+    scope string when it isn't a resource-URI-shaped scope or matches nothing.
+    """
+    if not scope.startswith("http"):
+        return scope
+    origin = scope.rsplit("/", 1)[0] + "/"
+    return resolve_plane_from_resource(origin)

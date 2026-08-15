@@ -1,4 +1,10 @@
+import base64
+import hashlib
+import secrets
 import time
+import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import msal
 import typer
@@ -7,9 +13,38 @@ from rich.console import Console
 from entruder.globals import RESOURCE_SHORTCUTS
 from .http import request_json
 from .logging import vprint
-from .parser import csv_to_list, parse_error
+from .parser import csv_to_list, parse_error, parse_token, resolve_plane_from_resource
 
 console = Console()
+
+
+def acquire_for_resources(resources: list, acquire, console, output_tokens=False, label=None) -> dict:
+    """
+    acquire(plane, res) does the actual IdP call and differs per command (MSAL
+    client-credentials, raw ROPC/refresh/kerberos POSTs, ...) so it's always
+    supplied by the caller. label covers the one thing that needs different
+    printing (FOCI prefixing every line with which family member it's for) —
+    a plain value instead of a callback, since that's all that ever varied.
+    """
+    tokens = {}
+    prefix = f"{label} " if label else ""
+    for res in resources:
+        plane = resolve_plane_from_resource(res)
+        result = acquire(plane, res)
+
+        if "access_token" not in result:
+            msg = f"{prefix}{plane.capitalize()} token failed to acquire: {parse_error(result.get('error_description', result.get('error', 'Unknown error')))}"
+            console.print(f"[bold red][-][/] {msg}")
+            continue
+
+        parsed = parse_token(result)
+        tokens[plane] = parsed
+        vprint(f"{plane} token expires at {parsed['expires_at']}")
+        console.print(f"[bold green][+][/] {prefix}{plane.capitalize()} Token acquired successfully!")
+        if output_tokens:
+            console.print(f"[bold]{prefix}{plane.capitalize()} Access Token:[/]\n{parsed['value']}\n")
+
+    return tokens
 
 
 def build_cert_credential(cert_path: str, key_path: str, passphrase: str = None) -> dict:
@@ -122,6 +157,144 @@ def device_login_v2(tenant, client_id, scopes) -> dict:
     console.print(f"\n[bold yellow][*][/] {flow['message']}\n")
 
     result = app.acquire_token_by_device_flow(flow)
+
+    if "access_token" not in result:
+        console.print(f"[bold red][-][/] Error during token acquisition: {parse_error(result.get('error_description', 'Unknown error'))}")
+        raise typer.Exit(1)
+
+    return result
+
+
+def _catch_redirect(redirect_uri: str, timeout: int = 300) -> dict:
+    """
+    Bind a short-lived local HTTP listener on redirect_uri's host/port, wait for
+    AAD's browser redirect to land on it, and return the callback's query params
+    (code, state, or error/error_description). Only used by the interactive flow —
+    redeeming an out-of-band code never touches this.
+    """
+    parsed = urlparse(redirect_uri)
+    host = parsed.hostname or "localhost"
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    callback_path = parsed.path or "/"
+
+    captured = {}
+
+    class _Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if urlparse(self.path).path == callback_path:
+                captured.update(parse_qs(urlparse(self.path).query))
+                body = b"<html><body>Login captured &mdash; you can close this tab.</body></html>"
+                self.send_response(200)
+            else:
+                body = b""
+                self.send_response(404)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_args):
+            pass 
+
+    server = HTTPServer((host, port), _Handler)
+    vprint(f"Listening for the redirect on {host}:{port}{callback_path}")
+
+    deadline = time.monotonic() + timeout
+    while not captured and time.monotonic() < deadline:
+        server.timeout = max(1, deadline - time.monotonic())
+        server.handle_request()
+    server.server_close()
+
+    if not captured:
+        console.print("[bold red][-][/] Timed out waiting for the authorization redirect.")
+        raise typer.Exit(1)
+
+    # parse_qs always returns lists; flatten to single values
+    return {k: v[0] for k, v in captured.items()}
+
+
+def _interactive_auth_code(tenant, client_id, scope_param, redirect_uri, pkce, open_browser) -> tuple:
+    """
+    Build the /authorize URL (with PKCE by default), drive the user to it, and
+    catch the resulting redirect. Returns (code, verifier) for the token exchange.
+    """
+    state = secrets.token_urlsafe(16)
+    params = {
+        "client_id": client_id,
+        "response_type": "code",
+        "redirect_uri": redirect_uri,
+        "response_mode": "query",
+        "scope": scope_param,
+        "state": state,
+    }
+
+    verifier = None
+    if pkce:
+        verifier = secrets.token_urlsafe(64)
+        digest = hashlib.sha256(verifier.encode("ascii")).digest()
+        params["code_challenge"] = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+        params["code_challenge_method"] = "S256"
+
+    auth_url = f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize?{urlencode(params)}"
+    console.print(f"\n[bold yellow][*][/] Open this URL to sign in:\n{auth_url}\n")
+    if open_browser:
+        webbrowser.open(auth_url)
+
+    auth_response = _catch_redirect(redirect_uri)
+
+    if auth_response.get("state") != state:
+        console.print("[bold red][-][/] State mismatch on redirect — possible CSRF, aborting.")
+        raise typer.Exit(1)
+
+    if "code" not in auth_response:
+        console.print(f"[bold red][-][/] Authorization failed: {parse_error(auth_response.get('error_description', 'No code in redirect'))}")
+        raise typer.Exit(1)
+
+    return auth_response["code"], verifier
+
+
+def auth_code_login(
+    tenant, client_id, scopes, redirect_uri,
+    client_secret=None, code=None, verifier=None, pkce=True, open_browser=True,
+) -> dict:
+    """
+    Authenticate via the OAuth2 authorization code flow (v2 endpoint), PKCE by
+    default. If `code` is supplied, the interactive listener step is
+    skipped entirely and the code is redeemed directly. This is what lets an
+    operator exchange a code captured out-of-band without ever driving a browser through this tool.
+    """
+    scope_list = csv_to_list(scopes)
+    if any(s.endswith("/.default") or s == ".default" for s in scope_list):
+        # .default (app-only, "whatever's statically configured") can't be mixed
+        # with other scopes in the same request — AAD rejects it. Send it as-is.
+        vprint(".default scope requested — skipping the openid/profile/offline_access auto-append, AAD rejects that combination")
+    else:
+        for extra in ("openid", "profile", "offline_access"):
+            if extra not in scope_list:
+                scope_list.append(extra)
+    scope_param = " ".join(scope_list)
+
+    if code is None:
+        code, verifier = _interactive_auth_code(tenant, client_id, scope_param, redirect_uri, pkce, open_browser)
+
+    data = {
+        "grant_type": "authorization_code",
+        "client_id": client_id,
+        "code": code,
+        "redirect_uri": redirect_uri,
+        "scope": scope_param,
+    }
+    if verifier:
+        data["code_verifier"] = verifier
+    if client_secret:
+        data["client_secret"] = client_secret
+
+    vprint(f"Redeeming authorization code for {client_id} (scope={scope_param})")
+    result = request_json(
+        "POST",
+        f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
+        data=data,
+    )
 
     if "access_token" not in result:
         console.print(f"[bold red][-][/] Error during token acquisition: {parse_error(result.get('error_description', 'Unknown error'))}")
