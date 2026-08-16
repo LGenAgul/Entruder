@@ -21,6 +21,7 @@ RESOURCE_SHORTCUTS = {
 
 CACHE_DIR  = Path.home() / ".entruder"
 SESSIONS_DIR = CACHE_DIR / "sessions"
+DOMAINS_FILE = CACHE_DIR / "domains.json"
 
 # Default timeout (seconds) for all outbound HTTP requests
 HTTP_TIMEOUT = 30

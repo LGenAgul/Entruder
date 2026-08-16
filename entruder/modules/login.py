@@ -15,6 +15,7 @@ from entruder.utils import (
     resolve_plane_from_scope,
     save_session,
     vprint,
+    require_tenant
 )
 import msal
 import os
@@ -73,13 +74,13 @@ def login_ropc(
         Authenticate with username and password via Resource Owner Password Credentials
     """
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
-
+    resolved_tenant = require_tenant(tenant,console)
     def acquire(plane, res):
         resource_url = RESOURCE_SHORTCUTS.get(res, res)
         vprint(f"ROPC: requesting {plane} token for {resource_url} as {username}")
         return request_json(
             "POST",
-            f"https://login.microsoftonline.com/{tenant}/oauth2/token",
+            f"https://login.microsoftonline.com/{resolved_tenant}/oauth2/token",
             data={
                 "grant_type": "password",
                 "client_id": client_id,
@@ -92,8 +93,8 @@ def login_ropc(
     tokens = acquire_for_resources(resources, acquire, console, output_tokens=output_tokens)
 
     if tokens:
-        save_session(tenant, client_id, tokens)
-        console.print(f"[bold green][+][/] Session saved for tenant: {tenant}")
+        save_session(resolved_tenant, client_id, tokens)
+        console.print(f"[bold green][+][/] Session saved for tenant: {resolved_tenant}")
 
 
 @login_app.command("device")

@@ -13,6 +13,8 @@ from entruder.utils import (
     require_session,
     render,
     OutputFormat,
+    save_domain_mapping,
+    require_tenant
     )
 
 enum_app = typer.Typer(help="Enumeration", no_args_is_help=True)
@@ -26,13 +28,28 @@ USER_COLUMNS = [
     ("Department", "department"),
 ]
 
+TENANT_COLUMNS = [
+    ("Domain", "domain"),
+    ("Tenant ID", "tenant_id"),
+    ("Token Endpoint", "token_endpoint"),
+    ("Tenant Region", "tenant_region"),
+    ("MsGraph Host", "msgraph_host"),
+    ("Namespace", "namespace"),
+    ("Brand Name", "brand_name"),
+    ("Cloud", "cloud"),
+    ("Auth URL", "auth_url"),
+    ("DSSO Enabled", "dsso_enabled"),
+    ("Federated", "federated"),
+]
+
 @enum_app.command("tenant")
 @handle_cli_errors
 def enum_tenant(
-    domain: str = typer.Option(..., "-domain", help="Domain Name")
-):  
-    try: 
-        
+    domain: str = typer.Option(..., "-domain", help="Domain Name"),
+    output: OutputFormat = typer.Option(OutputFormat.table, "-output", help="Output format"),
+):
+    try:
+        tenant_info = {}
         openid_json = request_json(
             "GET",
             f"https://login.microsoftonline.com/{domain}/.well-known/openid-configuration"
@@ -44,6 +61,9 @@ def enum_tenant(
             raise typer.Exit(1)
 
         tenant_id = openid_json["issuer"].split("/")[-2]
+        if tenant_id:
+            save_domain_mapping(domain,tenant_id)
+
         tenant_region_scope = openid_json.get("tenant_region_scope", "N/A")
         msgraph_host = openid_json.get("msgraph_host", "N/A")
         token_endpoint = openid_json.get("token_endpoint", "N/A")
@@ -56,19 +76,21 @@ def enum_tenant(
         userrealm_xml.raise_for_status()
         vprint(f"  -> HTTP {userrealm_xml.status_code} ({len(userrealm_xml.content)} bytes)")
         root = etree.fromstring(userrealm_xml.text)
+        tenant_info["domain"] = domain
+        tenant_info["tenant_id"] = tenant_id
+        tenant_info["token_endpoint"] = token_endpoint
+        tenant_info["tenant_region"] = tenant_region_scope
+        tenant_info["msgraph_host"] = msgraph_host
+        tenant_info["namespace"] = parse_xml_tag(root, 'NameSpaceType')
+        tenant_info["brand_name"] = parse_xml_tag(root, 'FederationBrandName')
+        tenant_info["cloud"] = parse_xml_tag(root, 'CloudInstanceName')
+        tenant_info["auth_url"] = parse_xml_tag(root, 'AuthURL')
+        tenant_info["dsso_enabled"] = parse_xml_tag(root, 'IsDssoEnabled')
+        tenant_info["federated"] = parse_xml_tag(root, 'NameSpaceType') == 'Federated'
 
-        # printing the userrealm information
-        console.print(f"[bold]Domain:[/]         {domain}")
-        console.print(f"[bold]Tenant ID:[/]      {tenant_id}")
-        console.print(f"[bold]Token Endpoint:[/] {token_endpoint}")
-        console.print(f"[bold]Tenant Region:[/]  {tenant_region_scope}")
-        console.print(f"[bold]MsGraph Host:[/]   {msgraph_host}")
-        console.print(f"[bold]Namespace:[/]      {parse_xml_tag(root,'NameSpaceType')}")
-        console.print(f"[bold]Brand Name:[/]     {parse_xml_tag(root,'FederationBrandName')}")
-        console.print(f"[bold]Cloud:[/]          {parse_xml_tag(root,'CloudInstanceName')}")
-        console.print(f"[bold]Auth URL:[/]       {parse_xml_tag(root,'AuthURL')}")
-        console.print(f"[bold]DSSO Enabled:[/]   {parse_xml_tag(root,'IsDssoEnabled')}")
-        console.print(f"[bold]Federated:[/]      {parse_xml_tag(root,'NameSpaceType') == 'Federated'}")
+        
+        
+        render(console, f"Tenant info for {domain}", TENANT_COLUMNS, [tenant_info], output=output, xml_item_tag="tenant")
     except typer.Exit:
         raise  # let our own explicit exits (with their specific message) through
     except Exception as e:
@@ -85,7 +107,9 @@ def enum_users(
     output: OutputFormat = typer.Option(OutputFormat.table, "-output", help="Output format"),
 ):
     """Enumerate directory users via Microsoft Graph, using a saved graph session"""
-    token = require_session(tenant, client_id, "graph", console)
+    resolved_tenant = require_tenant(tenant,console)
+
+    token = require_session(resolved_tenant, client_id, "graph", console)
     headers = {"Authorization": f"Bearer {token}"}
 
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/users"
@@ -106,6 +130,13 @@ def enum_users(
         users.extend(result["value"])
         url = result.get("@odata.nextLink")
 
-    render(console, f"Users in {tenant}", USER_COLUMNS, users, output=output, xml_item_tag="user")
+    render(console, f"Users in {resolved_tenant}", USER_COLUMNS, users, output=output, xml_item_tag="user")
     if output == OutputFormat.table:
         console.print(f"[bold]{len(users)}[/] users total")
+
+@enum_app.command("userinfo")
+@handle_cli_errors
+def enum_user_detail(
+
+):
+    pass

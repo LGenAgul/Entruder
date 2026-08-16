@@ -31,6 +31,17 @@ def render(console, title: str, columns: list, records: list, output: OutputForm
 
 
 def _render_table(console, title, columns, records) -> None:
+    if len(records) == 1:
+        # one record with many fields reads far better as Field/Value rows
+        # than a single row stretched across a dozen columns
+        table = Table(title=title)
+        table.add_column("Field")
+        table.add_column("Value")
+        for label, key in columns:
+            table.add_row(label, _cell(records[0].get(key)))
+        console.print(table)
+        return
+
     table = Table(title=title)
     for label, _ in columns:
         table.add_column(label)
@@ -72,3 +83,4 @@ def _xml_safe_tag(name: str) -> str:
     if not safe or safe[0].isdigit():
         safe = f"_{safe}"
     return safe
+

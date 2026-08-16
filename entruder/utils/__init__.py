@@ -16,6 +16,8 @@ from .parser import (
     resolve_resource,
     resolve_plane_from_resource,
     resolve_plane_from_scope,
+    save_domain_mapping,
+    require_tenant
 )
 from .session import (
     save_session,
