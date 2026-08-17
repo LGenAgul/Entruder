@@ -2,6 +2,8 @@ import re
 import json
 import base64
 
+
+
 def parse_error(description: str) -> str:
      from entruder.globals import ERROR_CODES
      match = re.match(r"AADSTS\d+", description or "")
@@ -58,3 +60,5 @@ def resolve_plane_from_scope(scope: str) -> str:
         return scope
     origin = scope.rsplit("/", 1)[0] + "/"
     return resolve_plane_from_resource(origin)
+
+
