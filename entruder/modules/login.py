@@ -1,6 +1,6 @@
 import typer
 from rich.console import Console
-from entruder.globals import PLANES, RESOURCE_SHORTCUTS, FOCI_CLIENTS
+from entruder.globals import PLANES, RESOURCE_SHORTCUTS, FOCI_CLIENTS, MFA_SWEEP_RESOURCES
 from entruder.utils import (
     acquire_for_resources,
     auth_code_login,
@@ -9,13 +9,15 @@ from entruder.utils import (
     device_login_v1,
     device_login_v2,
     handle_cli_errors,
+    parse_error,
     parse_token,
     request_json,
     resolve_plane_from_resource,
     resolve_plane_from_scope,
     save_session,
     vprint,
-    require_tenant
+    require_tenant,
+    initialize_tenant_cache
 )
 import msal
 import os
@@ -58,13 +60,15 @@ def login_secret(
     # if the tokens dictionary is not empty, save the session
     if tokens:
         save_session(tenant, client_id, tokens)
+        initialize_tenant_cache(tenant, client_id)
         console.print(f"[bold green][+][/] Session saved for tenant: {tenant}")
+        
 
 
 @login_app.command("ropc")
 @handle_cli_errors
 def login_ropc(
-    tenant: str = typer.Option(..., "-tenant", help="Tenant ID"),
+    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
     client_id: str = typer.Option(..., "-clientid", help="Client ID"),
     username: str = typer.Option(..., "-upn", help="Username"),
     password: str = typer.Option(..., "-password", help="Password"),
@@ -73,14 +77,15 @@ def login_ropc(
     """
         Authenticate with username and password via Resource Owner Password Credentials
     """
+    tenant =  require_tenant(tenant,console)
+
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
-    resolved_tenant = require_tenant(tenant,console)
     def acquire(plane, res):
         resource_url = RESOURCE_SHORTCUTS.get(res, res)
         vprint(f"ROPC: requesting {plane} token for {resource_url} as {username}")
         return request_json(
             "POST",
-            f"https://login.microsoftonline.com/{resolved_tenant}/oauth2/token",
+            f"https://login.microsoftonline.com/{tenant}/oauth2/token",
             data={
                 "grant_type": "password",
                 "client_id": client_id,
@@ -93,8 +98,10 @@ def login_ropc(
     tokens = acquire_for_resources(resources, acquire, console, output_tokens=output_tokens)
 
     if tokens:
-        save_session(resolved_tenant, client_id, tokens)
-        console.print(f"[bold green][+][/] Session saved for tenant: {resolved_tenant}")
+        save_session(tenant, client_id, tokens)
+        initialize_tenant_cache(tenant, client_id)
+        console.print(f"[bold green][+][/] Session saved for tenant: {tenant}")
+        
 
 
 @login_app.command("device")
@@ -111,8 +118,6 @@ def login_device(
     """
     Authenticate via device code flow. Default flow is v1, with -v2 for scope-based flow
     """
-    # a single interactive poll producing exactly one token, not a per-resource
-    # sweep like the other flows — doesn't fit acquire_for_resources
     tokens = {}
     if v2:
         plane = "graph"
@@ -124,7 +129,9 @@ def login_device(
     # continue with session write logic after these
     if tokens:
         save_session(tenant, client_id, tokens)
+        initialize_tenant_cache(tenant, client_id)
         console.print(f"[bold green][+][/] {plane.capitalize()} Session saved for tenant: {tenant}")
+        
     if output_tokens:
         console.print(f"[bold]Access Token:[/]\n{tokens[plane]['value']}\n")
 
@@ -141,6 +148,7 @@ def login_refresh(
     """
     Acquire new access tokens using a refresh token.
     """
+    tenant =  require_tenant(tenant,console)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
     # AAD may rotate the refresh token per request; keep a mutable holder so
     # `acquire` can chain the newest one across resources in this loop
@@ -168,7 +176,9 @@ def login_refresh(
 
     if tokens:
         save_session(tenant, client_id, tokens)
+        initialize_tenant_cache(tenant, client_id)
         console.print(f"[bold green][+][/] Session saved for tenant: {tenant}")
+        
 
 
 @login_app.command("cert")
@@ -185,6 +195,7 @@ def login_cert(
     """
     Authenticate with a Service Principal's client certificate (certificate-based auth)
     """
+    tenant =  require_tenant(tenant,console)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
 
     # certificate credentials swap in for a secret; everything else mirrors `login secret`
@@ -205,7 +216,9 @@ def login_cert(
     # if the tokens dictionary is not empty, save the session
     if tokens:
         save_session(tenant, client_id, tokens)
+        initialize_tenant_cache(tenant, client_id)
         console.print(f"[bold green][+][/] Session saved for tenant: {tenant}")
+        
 
 
 @login_app.command("foci")
@@ -217,6 +230,7 @@ def login_foci(
     output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
 ):
     """Use the Microsoft Family of Client IDs to acquire a Family Refresh Token (FRT)"""
+    tenant =  require_tenant(tenant,console)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
     family = {}
 
@@ -250,6 +264,9 @@ def login_foci(
             # each family member is a distinct identity — save it under its own
             # client_id so the per-identity session files don't overwrite each other
             save_session(tenant, client_id, client_tokens)
+            # last accepted family member wins as the active session, consistent
+            # with "whatever you just successfully logged in as" everywhere else
+            initialize_tenant_cache(tenant, client_id)
             console.print(f"[bold green][+][/] {name} ({client_id}) accepted — planes: {', '.join(client_tokens)}")
         else:
             console.print(f"[dim][-] {name} rejected the token[/dim]")
@@ -259,6 +276,8 @@ def login_foci(
         raise typer.Exit(1)
 
     console.print(f"\n[bold]{len(family)}/{len(FOCI_CLIENTS)} FOCI clients accepted the refresh token, sessions saved for tenant: {tenant}[/]")
+    last_accepted = FOCI_CLIENTS[next(reversed(family))]
+    console.print(f"[dim]Active session set: tenant={tenant}, client_id={last_accepted}[/dim]")
 
 
 @login_app.command("kerberos")
@@ -273,6 +292,7 @@ def login_kerberos(
 ):
     """Authenticate using Kerberos ticket via Seamless SSO (pass-the-ticket)"""
     # resolve the ccache and assign it to the KRB5CCNAME env variable
+    tenant =  require_tenant(tenant,console)
     if ccache:
         ccache = os.path.realpath(ccache)
         if not os.path.exists(ccache):
@@ -303,7 +323,9 @@ def login_kerberos(
     
     if tokens:
         save_session(tenant, client_id, tokens)
+        initialize_tenant_cache(tenant, client_id)
         console.print(f"\n[bold green][+][/] Session saved for tenant: {tenant}")
+        
     else:
         console.print(f"\n[bold red][-][/] No tokens acquired")
         raise typer.Exit(1)
@@ -330,6 +352,7 @@ def login_authcode(
     """
     Authenticate via the OAuth2 authorization code flow (v2 endpoint, PKCE by default).
     """
+    tenant =  require_tenant(tenant,console)
     result = auth_code_login(
         tenant, client_id, scopes, redirect_uri,
         client_secret=client_secret,
@@ -343,6 +366,98 @@ def login_authcode(
     tokens = {plane: parse_token(result)}
 
     save_session(tenant, client_id, tokens)
+    initialize_tenant_cache(tenant, client_id)
     console.print(f"[bold green][+][/] {plane.capitalize()} Session saved for tenant: {tenant}")
+
     if output_tokens:
         console.print(f"[bold]Access Token:[/]\n{tokens[plane]['value']}\n")
+
+
+@login_app.command("mfasweep")
+@handle_cli_errors
+def login_mfasweep(
+    tenant:   str = typer.Option(None, "-tenant", help="Tenant ID"),
+    username: str = typer.Option(..., "-upn", help="Username"),
+    password: str = typer.Option(..., "-password", help="Password"),
+    resource: str = typer.Option(None, "-resource", help="Limit the sweep to one resource (Optional, default: sweep all known resources)"),
+    client_id: str = typer.Option(None, "-clientid", help="Limit the sweep to one client ID (Optional, default: sweep all FOCI client IDs)"),
+    unsafe: bool = typer.Option(False, "-unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
+):
+    """
+    Authenticates against numerous planes to check for a lack of MFA enforcment (Shoutouts to https://github.com/absolomb/FindMeAccess)
+    """
+    tenant = require_tenant(tenant, console)
+
+    resources = {resource: MFA_SWEEP_RESOURCES.get(resource, resource)} if resource else MFA_SWEEP_RESOURCES
+    clients = {"custom": client_id} if client_id else FOCI_CLIENTS
+    total = len(resources) * len(clients)
+
+    console.print(f"[bold]Sweeping {len(resources)} resource(s) x {len(clients)} client ID(s) "
+                  f"({total} combinations) for {username}[/]\n")
+
+    gaps = []
+    for res_name, resource_url in resources.items():
+        for client_name, sweep_client_id in clients.items():
+            vprint(f"Trying {res_name} / {client_name}")
+            result = request_json(
+                "POST",
+                f"https://login.microsoftonline.com/{tenant}/oauth2/token",
+                data={
+                    "grant_type": "password",
+                    "client_id":  sweep_client_id,
+                    "username":   username,
+                    "password":   password,
+                    "resource":   resource_url,
+                }
+            )
+
+            if "access_token" in result:
+                gaps.append((res_name, client_name, "authenticated with no MFA challenge"))
+                console.print(f"[bold red][!][/] MFA GAP: {res_name} / {client_name} — no MFA challenge")
+                save_session(tenant, sweep_client_id, {res_name: parse_token(result)})
+                continue
+
+            description = result.get("error_description", "")
+
+            if "AADSTS50079" in description:
+                gaps.append((res_name, client_name, "MFA required but user never enrolled"))
+                console.print(f"[bold red][!][/] MFA GAP: {res_name} / {client_name} — MFA required but not enrolled")
+                continue
+
+            if "AADSTS50076" in description:
+                console.print(f"[dim][-] {res_name} / {client_name} — MFA required (expected)[/dim]")
+                continue
+
+            if "AADSTS53003" in description or "AADSTS50105" in description:
+                console.print(f"[dim][-] {res_name} / {client_name} — blocked by Conditional Access (expected)[/dim]")
+                continue
+
+            if "AADSTS50126" in description:
+                console.print(f"[bold red][-][/] {parse_error(description)} — stopping sweep, password is wrong for every remaining combination")
+                raise typer.Exit(1)
+
+            if "AADSTS50034" in description:
+                console.print(f"[bold red][-][/] {parse_error(description)} — stopping sweep")
+                raise typer.Exit(1)
+
+            if "AADSTS50053" in description:
+                console.print(f"[bold red][-][/] {parse_error(description)}")
+                if not unsafe:
+                    console.print("[dim]Stopping to avoid worsening the lockout. Pass -unsafe to continue anyway.[/dim]")
+                    raise typer.Exit(1)
+                console.print("[dim]-unsafe set, continuing despite lockout[/dim]")
+                continue
+
+            # anything else: log and keep going rather than assuming it's fatal
+            console.print(f"[dim][-] {res_name} / {client_name} — {parse_error(description or result.get('error', 'Unknown error'))}[/dim]")
+
+    console.print()
+    if gaps:
+        console.print(f"[bold red]{len(gaps)} MFA gap(s) found for {username}:[/]")
+        for res_name, client_name, reason in gaps:
+            console.print(f"  - {res_name} / {client_name}: {reason}")
+        console.print("[dim]Gap sessions were saved — pick them up with `entruder enum ...`[/dim]")
+    else:
+        console.print(f"[bold green]No MFA gaps found for {username} across {total} combination(s)[/]")
+
+

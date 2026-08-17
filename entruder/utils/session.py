@@ -1,6 +1,6 @@
 
 from .logging import vprint
-from entruder.globals import SESSIONS_DIR,EXPIRY_BUFFER
+from entruder.globals import SESSIONS_DIR, EXPIRY_BUFFER, ACTIVE_FILE
 import json
 import time
 
@@ -43,6 +43,48 @@ SESSION_SCHEMA = {
         }
     }
 }
+
+def initialize_tenant_cache(tenant: str, client_id: str) -> None:
+    from entruder.globals import CACHE_DIR
+    CACHE_DIR.mkdir(mode=0o700, exist_ok=True)
+    body = {"tenant": tenant, "client_id": client_id}
+    ACTIVE_FILE.write_text(json.dumps(body, indent=2))
+    ACTIVE_FILE.chmod(0o600)
+    vprint(f"[dim]Tenant cache saved: tenant={tenant}, client_id={client_id}[/dim]")
+
+
+def get_tenant_cache(tenant: str = None, client_id: str = None) -> tuple:
+    """
+    Resolve tenant/client_id independently: whatever the caller explicitly
+    passed is used as-is, and the cached active session only fills in whichever
+    value is missing — it never overrides an explicitly-provided value. Always
+    returns a safely-unpackable 2-tuple; unresolved values come back as None
+    rather than the whole call returning a bare None.
+    """
+    cached_tenant, cached_client_id = None, None
+    if not (tenant and client_id) and ACTIVE_FILE.exists():
+        body = json.loads(ACTIVE_FILE.read_text())
+        cached_tenant, cached_client_id = body.get("tenant"), body.get("client_id")
+
+    return tenant or cached_tenant, client_id or cached_client_id
+
+
+def require_tenant_cache(tenant: str, client_id: str, console) -> tuple:
+    """
+    Like get_tenant_cache, but hard-exits with a clear message if either
+    value is still missing after checking the cache — mirrors require_session's
+    "get_X returns best-effort, require_X gates it" pattern.
+    """
+    import typer
+
+    resolved_tenant, resolved_client_id = get_tenant_cache(tenant, client_id)
+    missing = [flag for flag, value in (("-tenant", resolved_tenant), ("-clientid", resolved_client_id)) if not value]
+    if missing:
+        console.print(f"[bold red][-][/] Missing {' and '.join(missing)}, and no active tenant information found")
+        console.print("[dim] Pass them explicitly, or run a login command first to set an active session[/dim]")
+        raise typer.Exit(1)
+
+    return resolved_tenant, resolved_client_id
 
 
 def save_session(tenant: str, client_id: str, tokens: dict, refresh_token: str=None) -> None:
@@ -130,3 +172,4 @@ def check_expired(session: dict, plane) -> bool:
     if expires_at and expires_at <= (now + EXPIRY_BUFFER):
         return True
     return False
+

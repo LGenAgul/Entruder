@@ -19,9 +19,21 @@ RESOURCE_SHORTCUTS = {
     "keyvault":   "https://vault.azure.com/",
 }
 
+# resources swept by `login mfasweep` — broader than RESOURCE_SHORTCUTS since
+# Conditional Access MFA enforcement is evaluated per resource/client pairing,
+# not uniformly per identity, so more resources means more chances to find a gap
+MFA_SWEEP_RESOURCES = {
+    "graph":      "https://graph.microsoft.com/",
+    "management": "https://management.azure.com/",
+    "keyvault":   "https://vault.azure.com/",
+    "azuregraph": "https://graph.windows.net/",
+    "outlook":    "https://outlook.office365.com/",
+}
+
 CACHE_DIR  = Path.home() / ".entruder"
 SESSIONS_DIR = CACHE_DIR / "sessions"
 DOMAINS_FILE = CACHE_DIR / "domains.json"
+ACTIVE_FILE = CACHE_DIR / "active.json"
 
 # Default timeout (seconds) for all outbound HTTP requests
 HTTP_TIMEOUT = 30
@@ -35,6 +47,29 @@ API_VERSIONS = {
     "keyvault":   "7.4",
 }
 
+# --- Microsoft Graph request config ------------------------------------------
+# $select field lists and headers used by the enum commands. Keep each field
+# list next to its matching $select string so they don't drift apart.
+
+BASIC_FIELDS = ["id", "displayName", "userPrincipalName", "accountEnabled", "jobTitle", "department"]
+BASIC_PARAMS = {"$select": "id,displayName,userPrincipalName,accountEnabled,jobTitle,department"}
+
+TRANSITIVE_PARAMS = {"$select": "id,displayName,description,securityEnabled,isAssignableToRole,roleTemplateId"}
+
+GROUP_PARAMS = {"$select": "id,displayName,description,securityEnabled,isAssignableToRole,mailEnabled,groupTypes"}
+
+SP_PARAMS = {"$select": "id,appId,displayName,servicePrincipalType,accountEnabled,appOwnerOrganizationId,"
+                        "appRoleAssignmentRequired,publisherName,homepage,replyUrls,tags,keyCredentials,passwordCredentials"}
+# @odata.type can't be explicitly $selected — Graph rejects it with a 400 on
+# a polymorphic collection like /me/ownedObjects. It's included automatically
+# regardless, so the same SP_PARAMS work unchanged for both endpoints.
+
+FULL_METADATA_ACCEPT = "application/json;odata.metadata=full"
+
+# fields kept when projecting transitiveMemberOf entries down to groups / rolesA
+GROUP_FIELDS = {"id", "displayName", "description", "securityEnabled", "isAssignableToRole", "@odata.type"}
+ROLE_FIELDS = {"id", "displayName", "description", "roleTemplateId", "@odata.type"}
+
 ERROR_CODES = {
     "AADSTS50076":   "MFA required, try login device for interactive flow",
     "AADSTS50079":   "MFA registration required",
@@ -43,6 +78,7 @@ ERROR_CODES = {
     "AADSTS50001":   "Invalid resource URI",
     "AADSTS70011":   "Invalid scope",
     "AADSTS53003":   "Conditional Access policy blocked sign-in",
+    "AADSTS50105":   "User not assigned to the app / blocked by Conditional Access",
     "AADSTS65001":   "User or admin consent required",
     "AADSTS700016":  "Application not found in tenant",
     "AADSTS50034":   "User account does not exist",
@@ -66,5 +102,10 @@ FOCI_CLIENTS = {
     "power_automate":   "27922004-5251-4030-b22d-91ecd9a37ea4",
     "microsoft_edge":   "ecd6b820-32c2-49b6-98a6-444530e5a77a",
 }
+
+
+MFA_EXCLUSION_PATTERNS = [
+    "mfa", "no-mfa", "nomfa", "yolo", "exclude", "bypass", "exempt"
+]
 
 
