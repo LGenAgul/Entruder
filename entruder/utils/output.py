@@ -234,6 +234,29 @@ def format_mfa(value) -> str:
     return "\n".join(methods)
 
 
+def format_custom_attributes(value) -> str:
+    """Compact cell for a user's customSecurityAttributes: one line per
+    attribute set, values joined attr=val (skipping the @odata.type marker).
+    Empty means either no attributes are assigned OR the caller lacks
+    CustomSecAttributeAssignment.Read.All — Graph omits the field silently in
+    both cases rather than erroring, so it can't be told apart from here."""
+    if not value or not isinstance(value, dict):
+        return ""
+    lines = []
+    for attr_set, attrs in value.items():
+        if not isinstance(attrs, dict):
+            continue
+        pairs = []
+        for k, v in attrs.items():
+            if k == "@odata.type":
+                continue
+            if isinstance(v, list):
+                v = ",".join(str(x) for x in v)
+            pairs.append(f"{k}={v}")
+        lines.append(f"{attr_set}: {', '.join(pairs)}")
+    return "\n".join(lines)
+
+
 def format_credentials(value) -> str:
     """Compact credential cell for a servicePrincipal's keyCredentials/
     passwordCredentials: count plus the soonest expiry, so a stale/long-lived

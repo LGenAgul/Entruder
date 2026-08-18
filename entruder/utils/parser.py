@@ -24,6 +24,14 @@ def decode_jwt(token: str) -> dict:
     except Exception:
         return {}
 
+def decode_jwt_header(token: str) -> dict:
+    try:
+        header = token.split(".")[0]
+        header += "=" * (-len(header) % 4)
+        return json.loads(base64.b64decode(header))
+    except Exception:
+        return {}
+
 def parse_token(result: dict) -> dict:
      claims = decode_jwt(result['access_token'])
      return {

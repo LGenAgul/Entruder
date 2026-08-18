@@ -11,6 +11,7 @@ from .parser import (
     parse_error,
     parse_xml_tag,
     decode_jwt,
+    decode_jwt_header,
     parse_token,
     csv_to_list,
     resolve_resource,
@@ -35,5 +36,6 @@ from .output import (render
                      , format_groups
                      , format_mfa
                      , format_credentials
+                     , format_custom_attributes
                      ,
                      output_option)

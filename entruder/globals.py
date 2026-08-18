@@ -41,18 +41,20 @@ EXPIRY_BUFFER = 120
 
 
 API_VERSIONS = {
-    "management": "2022-01-01",
-    "storage":    "2023-01-01",
-    "graph":      "v1.0",
-    "keyvault":   "7.4",
+    "management":    "2022-01-01",
+    "storage":       "2026-04-01",
+    "storage_data":  "2021-08-06",  # x-ms-version for the Blob Service data-plane REST API (List Containers/Blobs)
+    "graph":         "v1.0",
+    "keyvault":      "7.4",
+    "authorization": "2022-04-01",  # Microsoft.Authorization/permissions (effective-permissions self-check)
 }
 
 # --- Microsoft Graph request config ------------------------------------------
 # $select field lists and headers used by the enum commands. Keep each field
 # list next to its matching $select string so they don't drift apart.
 
-BASIC_FIELDS = ["id", "displayName", "userPrincipalName", "accountEnabled", "jobTitle", "department"]
-BASIC_PARAMS = {"$select": "id,displayName,userPrincipalName,accountEnabled,jobTitle,department"}
+BASIC_FIELDS = ["id", "displayName", "userPrincipalName", "accountEnabled", "jobTitle", "department", "customSecurityAttributes"]
+BASIC_PARAMS = {"$select": "id,displayName,userPrincipalName,accountEnabled,jobTitle,department,customSecurityAttributes"}
 
 TRANSITIVE_PARAMS = {"$select": "id,displayName,description,securityEnabled,isAssignableToRole,roleTemplateId"}
 
@@ -107,5 +109,36 @@ FOCI_CLIENTS = {
 MFA_EXCLUSION_PATTERNS = [
     "mfa", "no-mfa", "nomfa", "yolo", "exclude", "bypass", "exempt"
 ]
+
+# Entra ID built-in directory role "template IDs" — these GUIDs are constant
+# across every tenant (unlike a role *assignment* id, which is per-tenant),
+# so a token's `wids` claim can be matched against them directly to name and
+# tier the directory roles the token holder currently has active. Not
+# exhaustive — covers the roles most relevant to privilege escalation and
+# lateral movement during an assessment.
+# Source: https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference
+DIRECTORY_ROLES = {
+    "62e90394-69f5-4237-9190-012177145e10": {"name": "Global Administrator",               "tier": "critical"},
+    "e8611ab8-c189-46e8-94e1-60213ab1f814": {"name": "Privileged Role Administrator",       "tier": "critical"},
+    "7be44c8a-adaf-4e2a-84d6-ab2649e08a13": {"name": "Privileged Authentication Administrator", "tier": "critical"},
+    "fe930be7-5e62-47db-91af-98c3a49a38b1": {"name": "User Administrator",                  "tier": "high"},
+    "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3": {"name": "Application Administrator",           "tier": "high"},
+    "158c047a-c907-4556-b7ef-446551a6b5f7": {"name": "Cloud Application Administrator",     "tier": "high"},
+    "c4e39bd9-1100-46d3-8c65-fb160da0071f": {"name": "Authentication Administrator",        "tier": "high"},
+    "194ae4cb-b126-40b2-bd5b-6091b380977d": {"name": "Security Administrator",              "tier": "high"},
+    "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9": {"name": "Conditional Access Administrator",    "tier": "high"},
+    "e00e864a-17c5-4a4b-9c06-f5b95a8d5bd8": {"name": "Partner Tier2 Support",                "tier": "high"},
+    "fdd7a751-b60b-444a-984c-02652fe8fa1c": {"name": "Groups Administrator",                "tier": "medium"},
+    "729827e3-9c14-49f7-bb1b-9608f156bbb8": {"name": "Helpdesk Administrator",              "tier": "medium"},
+    "29232cdf-9323-42fd-ade2-1d097af3e4de": {"name": "Exchange Administrator",              "tier": "medium"},
+    "f28a1f50-f6e7-4571-818b-6a12f2af6b6c": {"name": "SharePoint Administrator",            "tier": "medium"},
+    "3a2c62db-5318-420d-8d74-23affee5d9d5": {"name": "Intune Administrator",                "tier": "medium"},
+    "9360feb5-f418-4baa-8175-e2a00bac4301": {"name": "Directory Writers",                   "tier": "medium"},
+    "4ba39ca4-527c-499a-b93d-d9b492c50246": {"name": "Partner Tier1 Support",               "tier": "medium"},
+    "88d8e3e3-8f55-4a1e-953a-9b9898b8876b": {"name": "Directory Readers",                   "tier": "low"},
+    "f2ef992c-3afb-46b9-b7cf-a126ee74c451": {"name": "Global Reader",                       "tier": "low"},
+}
+
+DIRECTORY_ROLE_TIER_ORDER = ["critical", "high", "medium", "low"]
 
 
