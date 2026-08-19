@@ -1,6 +1,8 @@
 
 from .logging import vprint
-from entruder.globals import SESSIONS_DIR, EXPIRY_BUFFER, ACTIVE_FILE
+from .auth import refresh_access_token
+from .parser import parse_token, parse_error
+from entruder.globals import SESSIONS_DIR, EXPIRY_BUFFER, ACTIVE_FILE, RESOURCE_SHORTCUTS
 import json
 import time
 
@@ -144,6 +146,10 @@ def require_session(tenant: str, client_id: str, plane: str, console) -> str:
         console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
         raise typer.Exit(1)
 
+    plane_missing = not session.get("tokens", {}).get(plane, {}).get("value")
+    if (check_expired(session, plane) or plane_missing) and session.get("refresh_token"):
+        session = _refresh_plane(tenant, client_id, plane, session, console)
+
     if check_expired(session, plane):
         console.print(f"[bold red][-][/] Session Expired for {tenant} / {client_id} on {plane} plane")
         console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
@@ -155,6 +161,28 @@ def require_session(tenant: str, client_id: str, plane: str, console) -> str:
         console.print(f"[dim]    Run: entruder login <method> -tenant {tenant} -clientid {client_id} -resource {plane}[/dim]")
         raise typer.Exit(1)
     return token
+
+
+def _refresh_plane(tenant: str, client_id: str, plane: str, session: dict, console) -> dict:
+    """Silently reissue `plane`'s token from the session's stored
+    refresh_token instead of immediately failing to "log in again" — covers
+    both an expired token and a plane that was simply never acquired (a
+    refresh token isn't tied to the resource it was originally issued for).
+    Returns the session unchanged if the redemption fails (e.g. Conditional
+    Access blocks it, or this is a client-credential session with no
+    refresh_token at all), so the caller's existing expired/missing checks
+    report the failure exactly as before."""
+    resource = RESOURCE_SHORTCUTS.get(plane, plane)
+    result = refresh_access_token(tenant, client_id, session["refresh_token"], resource)
+
+    if "access_token" not in result:
+        vprint(f"Silent refresh failed for {plane}: "
+               f"{parse_error(result.get('error_description', result.get('error', 'Unknown error')))}")
+        return session
+
+    save_session(tenant, client_id, {plane: parse_token(result)})
+    console.print(f"[dim][*] Silently refreshed {plane} token via cached refresh token[/dim]")
+    return get_session(tenant, client_id)
 
 
 def validate_json(session: dict) -> bool:

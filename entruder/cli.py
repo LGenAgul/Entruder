@@ -12,10 +12,12 @@ app = typer.Typer(
 
 @app.callback()
 def main(
-    verbose: bool = typer.Option(False, "-verbose", "-v", help="Show full tracebacks for internal errors")
+    verbose: bool = typer.Option(False, "-verbose", "-v", help="Show full tracebacks for internal errors"),
+    no_progress: bool = typer.Option(False, "-no-progress", help="Don't show the live progress spinner for multi call commands")
 ):
     """Global options applied to every command."""
     STATE.verbose = verbose
+    STATE.no_progress = no_progress
 
 # verbosity
 

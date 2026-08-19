@@ -2,15 +2,57 @@ import functools
 
 import typer
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, MofNCompleteColumn
 
 # Shared console for diagnostic (verbose) output
 _console = Console()
+
+# Progress feedback goes to stderr, not the main console, so it never lands
+# in piped -output json/csv/xml (that's stdout only) and stays visible on
+# screen even when stdout is redirected to a file.
+_status_console = Console(stderr=True)
 
 
 def vprint(message: str) -> None:
     from entruder.globals import STATE
     if STATE.verbose:
         _console.print(f"[dim][*] {message}[/dim]")
+
+
+def iter_with_progress(items, description: str, key=None):
+    """Wrap an iterable with a transient spinner so loops that make one API
+    call per item (checking access on N storage accounts, listing secrets on
+    N vaults, fetching config for N web apps) give feedback while they run
+    instead of hanging silently. Not gated by -verbose, unlike vprint, since
+    this is progress the user usually wants, not request-level debug detail,
+    but -no-progress (STATE.no_progress) turns it off for anyone who'd rather
+    not see it, e.g. when capturing a clean terminal recording.
+
+    key(item) -> a short label for the item currently being processed
+    (account name, vault name, ...); omit for a plain counter. Clears itself
+    once the loop finishes rather than leaving scrollback clutter.
+    """
+    from entruder.globals import STATE
+
+    items = list(items)
+    if not items:
+        return
+    if STATE.no_progress:
+        yield from items
+        return
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[dim]{task.description}[/dim]"),
+        MofNCompleteColumn(),
+        console=_status_console,
+        transient=True,
+    ) as progress:
+        task = progress.add_task(description, total=len(items))
+        for item in items:
+            if key:
+                progress.update(task, description=f"{description}: {key(item)}")
+            yield item
+            progress.advance(task)
 
 
 def report_error(exc: Exception, console: Console = None) -> None:

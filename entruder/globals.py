@@ -2,6 +2,7 @@ from pathlib import Path
 
 class State:
     verbose: bool = False
+    no_progress: bool = False
 
 STATE = State()
 
@@ -9,14 +10,14 @@ PLANES = {
     "management": "https://management.azure.com/.default",
     "graph":       "https://graph.microsoft.com/.default",
     "storage":     "https://storage.azure.com/.default",
-    "keyvault":    "https://vault.azure.com/.default",
+    "keyvault":    "https://vault.azure.net/.default",  # Key Vault's resource id is vault.azure.net, not .com
 }
 
 RESOURCE_SHORTCUTS = {
     "graph":      "https://graph.microsoft.com/",
     "management": "https://management.azure.com/",
     "storage":    "https://storage.azure.com/",
-    "keyvault":   "https://vault.azure.com/",
+    "keyvault":   "https://vault.azure.net/",
 }
 
 # resources swept by `login mfasweep` — broader than RESOURCE_SHORTCUTS since
@@ -25,7 +26,7 @@ RESOURCE_SHORTCUTS = {
 MFA_SWEEP_RESOURCES = {
     "graph":      "https://graph.microsoft.com/",
     "management": "https://management.azure.com/",
-    "keyvault":   "https://vault.azure.com/",
+    "keyvault":   "https://vault.azure.net/",
     "azuregraph": "https://graph.windows.net/",
     "outlook":    "https://outlook.office365.com/",
 }
@@ -47,6 +48,8 @@ API_VERSIONS = {
     "graph":         "v1.0",
     "keyvault":      "7.4",
     "authorization": "2022-04-01",  # Microsoft.Authorization/permissions (effective-permissions self-check)
+    "authorization_pim": "2020-10-01-preview",  # Microsoft.Authorization/roleEligibilityScheduleInstances — PIM is still preview-only in ARM
+    "web":           "2022-09-01",  # Microsoft.Web/sites (App Service)
 }
 
 # --- Microsoft Graph request config ------------------------------------------
@@ -65,6 +68,9 @@ SP_PARAMS = {"$select": "id,appId,displayName,servicePrincipalType,accountEnable
 # @odata.type can't be explicitly $selected — Graph rejects it with a 400 on
 # a polymorphic collection like /me/ownedObjects. It's included automatically
 # regardless, so the same SP_PARAMS work unchanged for both endpoints.
+
+APP_PARAMS = {"$select": "id,appId,displayName,signInAudience,web,spa,publicClient,isFallbackPublicClient,"
+                         "requiredResourceAccess,keyCredentials,passwordCredentials,tags"}
 
 FULL_METADATA_ACCEPT = "application/json;odata.metadata=full"
 

@@ -6,6 +6,14 @@ from entruder.utils import (
     format_groups,
     format_credentials,
     format_custom_attributes,
+    format_role_assignments,
+    format_app_role_assignments,
+    format_directory_role_eligibilities,
+    format_azure_role_eligibilities,
+    format_storage_keys,
+    format_access_policies,
+    format_string_list,
+    format_dict_summary,
     )
 
 
@@ -54,6 +62,20 @@ class Columns:
         ("Tags",                 "tags"),
     ]
 
+    # requiredResourceAccess is resolved into a flat list of readable
+    # "Resource: permission (Scope/Role)" lines by _resolve_required_resource_access
+    # before rendering — see modules/enum/applications.py.
+    APPLICATION = [
+        ("Display Name",         "displayName"),
+        ("App Id",               "appId"),
+        ("Sign-in Audience",     "signInAudience"),
+        ("Redirect URIs",        "_redirect_uris", format_string_list),
+        ("Public Client",        "_public_client"),
+        ("Required Permissions", "_required_resource_access", format_string_list),
+        ("Cert Creds",           "keyCredentials", format_credentials),
+        ("Secret Creds",         "passwordCredentials", format_credentials),
+        ("Tags",                 "tags"),
+    ]
 
 
 
@@ -68,7 +90,7 @@ class Columns:
         ("Roles", "roles", pluck("displayName")),
         ("MFA", "mfa", format_mfa),
         ("Owned", "owned", pluck("displayName")),
-        ("App Roles", "app_roles", pluck("resourceDisplayName")),
+        ("App Roles", "app_roles", format_app_role_assignments),
         ("MFA Exclusion Groups", "mfa_exclusion_groups"),
     ]
 
@@ -123,7 +145,82 @@ class Columns:
     ("Created",        "created"),
     ("RBAC: List Keys",  "can_list_keys"),
     ("Can List Containers", "can_list_containers"),
+    ("Access Keys",     "keys", format_storage_keys),
 ]
+
+    WEBAPP = [
+        ("Name",               "name"),
+        ("Resource Group",     "resource_group"),
+        ("Location",           "location"),
+        ("Kind",               "kind"),
+        ("State",              "state"),
+        ("Default Hostname",   "default_hostname"),
+        ("HTTPS Only",         "https_only"),
+        ("Client Cert",        "client_cert_enabled"),
+        ("Public Network",     "public_network"),
+        ("Managed Identity",   "identity", format_dict_summary),
+        ("Min TLS",            "min_tls"),
+        ("FTPS State",         "ftps_state"),
+        ("Remote Debugging",   "remote_debugging"),
+        ("Always On",          "always_on"),
+        ("Slots",              "slots", format_string_list),
+        ("App Settings",       "app_settings", format_dict_summary),
+        ("Connection Strings", "connection_strings", format_dict_summary),
+        ("Publishing Creds",   "publishing_credentials", format_dict_summary),
+    ]
+
+    VAULT = [
+        ("Name",              "name"),
+        ("Resource Group",    "resource_group"),
+        ("Location",          "location"),
+        ("Vault Uri",         "vault_uri"),
+        ("SKU",               "sku"),
+        ("RBAC Authorization", "rbac_authorization"),
+        ("Access Policies",   "access_policies", format_access_policies),
+        ("Soft Delete",       "soft_delete"),
+        ("Purge Protection",  "purge_protection"),
+        ("Public Network",    "public_network"),
+        ("Network ACL",       "network_default"),
+        ("Can List Secrets",  "can_list_secrets"),
+    ]
+
+    SECRET = [
+        ("Name",         "name"),
+        ("Enabled",      "enabled"),
+        ("Content Type", "contentType"),
+        ("Created",      "created"),
+        ("Updated",      "updated"),
+        ("Expires",      "expires"),
+        ("Tags",         "tags"),
+    ]
+
+    KEY = [
+        ("Name",    "name"),
+        ("Enabled", "enabled"),
+        ("Created", "created"),
+        ("Updated", "updated"),
+        ("Expires", "expires"),
+        ("Tags",    "tags"),
+    ]
+
+    CERTIFICATE = [
+        ("Name",       "name"),
+        ("Enabled",    "enabled"),
+        ("Thumbprint", "thumbprint"),
+        ("Created",    "created"),
+        ("Updated",    "updated"),
+        ("Expires",    "expires"),
+        ("Tags",       "tags"),
+    ]
+
+    SECRETVALUE = [
+        ("Name",         "name"),
+        ("Value",        "value"),
+        ("Content Type", "contentType"),
+        ("Version",      "version"),
+        ("Enabled",      "enabled"),
+        ("Expires",      "expires"),
+    ]
 
     CONTAINER = [
         ("Name",                 "Name"),
@@ -144,6 +241,36 @@ class Columns:
         ("Access Tier",   "AccessTier"),
         ("Lease Status",  "LeaseStatus"),
         ("Etag",          "Etag"),
+    ]
+
+    # roles/administrative_units/owned/app_role_assignments come from /me's
+    # transitive membership + ownership; azure_role_assignments is the ARM
+    # roleAssignments properties blob for the same principal on -subid.
+    PRIV = [
+        ("Display Name",          "displayName"),
+        ("UPN",                   "userPrincipalName"),
+        ("Object Id",             "id"),
+        ("Groups",                "groups", format_groups),
+        ("Directory Roles",       "directory_roles", pluck("displayName")),
+        ("Eligible Directory Roles (PIM)", "eligible_directory_roles", format_directory_role_eligibilities),
+        ("Administrative Units",  "administrative_units", pluck("displayName")),
+        ("Owned Objects",         "owned", pluck("displayName")),
+        ("App Role Assignments",  "app_role_assignments", format_app_role_assignments),
+        ("Azure Role Assignments", "azure_role_assignments", format_role_assignments),
+        ("Eligible Azure Roles (PIM)", "eligible_azure_role_assignments", format_azure_role_eligibilities),
+    ]
+
+    # users/groups/roles are resolved to readable names by _project_ca_policy
+    # before rendering — see modules/enum/conditionalaccess.py.
+    CAPOLICY = [
+        ("Name",              "displayName"),
+        ("State",             "state"),
+        ("Users",             "users", format_dict_summary),
+        ("Applications",      "applications", format_dict_summary),
+        ("Conditions",        "conditions_extra", format_dict_summary),
+        ("Grant Controls",    "grant_controls", format_dict_summary),
+        ("Session Controls",  "session_controls", format_dict_summary),
+        ("Modified",          "modifiedDateTime"),
     ]
 
     TOKEN = [

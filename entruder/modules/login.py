@@ -11,6 +11,7 @@ from entruder.utils import (
     handle_cli_errors,
     parse_error,
     parse_token,
+    refresh_access_token,
     request_json,
     resolve_plane_from_resource,
     resolve_plane_from_scope,
@@ -156,17 +157,7 @@ def login_refresh(
 
     def acquire(plane, res):
         resource_url = RESOURCE_SHORTCUTS.get(res, res)
-        vprint(f"Refreshing {plane} token for {resource_url}")
-        result = request_json(
-            "POST",
-            f"https://login.microsoftonline.com/{tenant}/oauth2/token",
-            data={
-                "grant_type": "refresh_token",
-                "client_id": client_id,
-                "refresh_token": rt_state["token"],
-                "resource": resource_url
-            }
-        )
+        result = refresh_access_token(tenant, client_id, rt_state["token"], resource_url)
         if result.get("refresh_token"):
             rt_state["token"] = result["refresh_token"]
             vprint(f"{plane}: refresh token was rotated")
@@ -241,15 +232,7 @@ def login_foci(
         def acquire(plane, res, name=name, client_id=client_id):
             resource_url = RESOURCE_SHORTCUTS.get(res, res)
             vprint(f"FOCI: redeeming RT as {name} ({client_id}) for {plane}")
-            result = request_json("POST",
-                f"https://login.microsoftonline.com/{tenant}/oauth2/token",
-                data={
-                    "grant_type":    "refresh_token",
-                    "client_id":     client_id,
-                    "refresh_token": rt_state["token"],
-                    "resource":      resource_url,
-                }
-            )
+            result = refresh_access_token(tenant, client_id, rt_state["token"], resource_url)
             if result.get("refresh_token"):
                 rt_state["token"] = result["refresh_token"]
             return result

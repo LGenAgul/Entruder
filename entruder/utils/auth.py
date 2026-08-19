@@ -40,6 +40,24 @@ def acquire_for_resources(resources: list, acquire, console, output_tokens=False
     return tokens
 
 
+def refresh_access_token(tenant, client_id, refresh_token, resource) -> dict:
+    """Redeem a refresh token for a fresh access token on `resource` via the
+    v1 token endpoint. Shared by `login refresh`/`login foci` (explicit,
+    user-invoked redemption) and require_session's silent refresh-on-expiry —
+    same grant, same endpoint, just a different caller."""
+    vprint(f"Redeeming refresh token for {resource} as {client_id}")
+    return request_json(
+        "POST",
+        f"https://login.microsoftonline.com/{tenant}/oauth2/token",
+        data={
+            "grant_type": "refresh_token",
+            "client_id": client_id,
+            "refresh_token": refresh_token,
+            "resource": resource,
+        },
+    )
+
+
 def build_cert_credential(cert_path: str, key_path: str, passphrase: str = None) -> dict:
     """
     Build the MSAL client_credential dict for certificate-based auth.

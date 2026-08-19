@@ -77,14 +77,13 @@ def render(
     readable strings.
 
     `columns` is a list of (label, key) tuples used for table/csv only.
-    """
-    # empty dict, empty list, or None all mean "nothing to show"
-    if not data:
-        console.print("[bold red][-][/] There was an error returning output")
-        return
 
+    An empty list is a legitimate result (the query succeeded, there's just
+    nothing to show) — it renders as valid empty json/xml/csv, or a plain
+    "No results" line in table mode, never as an error.
+    """
     is_list = isinstance(data, list)
-    records = data if is_list else [data]
+    records = data if is_list else [data if data is not None else {}]
 
     if output == OutputFormat.json:
         _render_json(console, data)
@@ -92,6 +91,10 @@ def render(
         _render_xml(console, xml_root_tag, xml_item_tag, records, wrap_items=is_list)
     elif output == OutputFormat.csv:
         _render_csv(console, columns, records)
+    elif is_list and not records:
+        if title:
+            console.print(title, style="bold")
+        console.print("[dim]No results.[/dim]")
     else:
         _render_table(console, title, columns, records)
 
@@ -112,7 +115,9 @@ def _render_table(console, title, columns, records) -> None:
     for i, r in enumerate(records):
         if i:
             console.print()  # blank line between records
-        for label, key, fmt in specs:
+        for j, (label, key, fmt) in enumerate(specs):
+            if j:
+                console.print()  # blank line between fields/sections
             _print_field(console, label, _format_cell(r.get(key), fmt), width)
 
 
@@ -269,6 +274,136 @@ def format_credentials(value) -> str:
     return f"{len(value)} (next expiry: {expiries[0][:10]})"
 
 
+def format_app_role_assignments(value) -> str:
+    """Compact cell for appRoleAssignments: which resource + the explicit
+    permission the appRoleId resolves to (see resolve_app_roles), instead of
+    just the resource name with no indication of what was actually granted."""
+    lines = []
+    for a in value or []:
+        if not isinstance(a, dict):
+            lines.append(str(a))
+            continue
+        lines.append(f"{a.get('resourceDisplayName', 'unknown')} - {a.get('appRolePermission', 'unknown')}")
+    return "\n".join(lines)
+
+
+def format_role_assignments(value) -> str:
+    """Compact cell for Azure RBAC role assignments (raw ARM roleAssignments
+    properties): role name/description/scope/principal type plus the
+    assignment id for follow-up calls. Drops audit metadata (created/updated
+    timestamps and actors, condition, delegatedManagedIdentityResourceId) and
+    the raw roleDefinitionId — noise once roleName is resolved — that clutters
+    the table without helping a who-has-what-role read."""
+    lines = []
+    for a in value or []:
+        if not isinstance(a, dict):
+            lines.append(str(a))
+            continue
+        lines.append(
+            f"{a.get('roleName', 'unknown')}  ({a.get('description', 'unknown')})\n"
+            f"  scope: {a.get('scope')}\n"
+            f"  principalType: {a.get('principalType')}\n"
+            f"  createdBy: {a.get('createdByUpn') or a.get('createdBy')}\n"
+            f"  updatedBy: {a.get('updatedByUpn') or a.get('updatedBy')}\n"
+            f"  roleAssignmentId: {a.get('roleAssignmentId')}"
+        )
+    return "\n\n".join(lines)
+
+
+def format_string_list(value) -> str:
+    """Compact cell for a plain list of strings — one per line. Used for
+    already-flattened values (redirect URIs, resolved permission strings)
+    that don't need per-item dict access like pluck()."""
+    return "\n".join(str(v) for v in value or [])
+
+
+def format_dict_summary(value) -> str:
+    """Compact cell for an arbitrary dict of scalars/lists/nested dicts: one
+    "key: value" line per non-empty entry, lists joined inline. Used for
+    open-ended structured blobs (CA policy conditions/controls, a web app's
+    identity/app settings) where the field set varies enough that a
+    bespoke per-field formatter would be pure bookkeeping."""
+    if not isinstance(value, dict):
+        return str(value) if value else ""
+    lines = []
+    for key, val in value.items():
+        if val in (None, "", [], {}):
+            continue
+        if isinstance(val, list):
+            val = ", ".join(str(v) for v in val)
+        elif isinstance(val, dict):
+            val = format_dict_summary(val).replace("\n", "; ")
+        lines.append(f"{key}: {val}")
+    return "\n".join(lines)
+
+
+def format_storage_keys(value) -> str:
+    """Compact cell for a storage account's actual shared keys, retrieved via
+    listKeys/action (see enum storage-accounts -list-keys) — the live secret
+    material, not just the can_list_keys permission check."""
+    lines = []
+    for k in value or []:
+        if not isinstance(k, dict):
+            lines.append(str(k))
+            continue
+        lines.append(f"{k.get('keyName', 'unknown')}: {k.get('value', 'unknown')}  (permissions: {k.get('permissions')})")
+    return "\n".join(lines)
+
+
+def format_access_policies(value) -> str:
+    """Compact cell for a Key Vault's access-policy grants (the pre-RBAC
+    permission model, still in play whenever enableRbacAuthorization is
+    false): which principal holds which keys/secrets/certificates
+    permissions directly on the vault."""
+    lines = []
+    for p in value or []:
+        if not isinstance(p, dict):
+            lines.append(str(p))
+            continue
+        perms = p.get("permissions", {}) or {}
+        grants = ", ".join(
+            f"{kind}=[{','.join(perms[kind])}]" for kind in ("keys", "secrets", "certificates") if perms.get(kind)
+        )
+        lines.append(f"{p.get('objectId', 'unknown')}  {grants or '(no permissions)'}")
+    return "\n".join(lines)
+
+
+def format_directory_role_eligibilities(value) -> str:
+    """Compact cell for Entra PIM-eligible directory roles: roles a principal
+    could self-activate into but doesn't currently hold, so they're invisible
+    to /me/transitiveMemberOf. Shows the tier (see DIRECTORY_ROLES), whether
+    it's direct or inherited from a group, and the eligibility window."""
+    lines = []
+    for e in value or []:
+        if not isinstance(e, dict):
+            lines.append(str(e))
+            continue
+        lines.append(
+            f"{e.get('roleName', 'unknown')}  [{e.get('tier', 'unknown')}]\n"
+            f"  memberType: {e.get('memberType')}, status: {e.get('status')}\n"
+            f"  window: {e.get('startDateTime')} -> {e.get('endDateTime') or 'no expiry'}"
+        )
+    return "\n\n".join(lines)
+
+
+def format_azure_role_eligibilities(value) -> str:
+    """Compact cell for Azure RBAC PIM-eligible role assignments — same shape
+    as format_role_assignments, but for eligibility schedules (not yet
+    activated) rather than active assignments."""
+    lines = []
+    for e in value or []:
+        if not isinstance(e, dict):
+            lines.append(str(e))
+            continue
+        lines.append(
+            f"{e.get('roleName', 'unknown')}  ({e.get('description', 'unknown')})\n"
+            f"  scope: {e.get('scope')}\n"
+            f"  memberType: {e.get('memberType')}, status: {e.get('status')}\n"
+            f"  window: {e.get('startDateTime')} -> {e.get('endDateTime') or 'no expiry'}"
+        )
+    return "\n\n".join(lines)
+
+
 def _cell(value) -> str:
     """Flatten any value (scalar, dict, or list) into a single readable string
     for table/csv cells."""
@@ -279,15 +414,16 @@ def _cell(value) -> str:
     if isinstance(value, (list, tuple)):
         if not value:
             return ""
-        # one entry per line: dicts become "k=v, k=v", scalars become str
-        return "\n".join(
-            _flatten_dict(v) if isinstance(v, dict) else str(v) for v in value
-        )
+        # dicts get one k=v per line, so separate entries with a blank line;
+        # plain scalars stay one-per-line
+        parts = [_flatten_dict(v) if isinstance(v, dict) else str(v) for v in value]
+        sep = "\n\n" if any(isinstance(v, dict) for v in value) else "\n"
+        return sep.join(parts)
     return str(value)
 
 
 def _flatten_dict(d: dict) -> str:
-    return ", ".join(f"{k}={'' if v is None else v}" for k, v in d.items())
+    return "\n".join(f"{k}={'' if v is None else v}" for k, v in d.items())
 
 
 def _xml_safe_tag(name: str) -> str:

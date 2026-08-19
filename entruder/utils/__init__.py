@@ -1,11 +1,12 @@
 from .http import request_json
-from .logging import vprint, report_error, handle_cli_errors
+from .logging import vprint, report_error, handle_cli_errors, iter_with_progress
 from .auth import (
     build_cert_credential,
     device_login_v1,
     device_login_v2,
     auth_code_login,
     acquire_for_resources,
+    refresh_access_token,
 )
 from .parser import (
     parse_error,
@@ -37,5 +38,13 @@ from .output import (render
                      , format_mfa
                      , format_credentials
                      , format_custom_attributes
+                     , format_role_assignments
+                     , format_app_role_assignments
+                     , format_directory_role_eligibilities
+                     , format_azure_role_eligibilities
+                     , format_storage_keys
+                     , format_access_policies
+                     , format_string_list
+                     , format_dict_summary
                      ,
                      output_option)
