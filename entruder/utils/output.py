@@ -114,10 +114,8 @@ def _render_table(console, title, columns, records) -> None:
         console.print(title, style="bold")
     for i, r in enumerate(records):
         if i:
-            console.print()  # blank line between records
-        for j, (label, key, fmt) in enumerate(specs):
-            if j:
-                console.print()  # blank line between fields/sections
+            console.print()  # blank line between records only, fields within a record stay packed
+        for label, key, fmt in specs:
             _print_field(console, label, _format_cell(r.get(key), fmt), width)
 
 

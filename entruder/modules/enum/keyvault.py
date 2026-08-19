@@ -117,8 +117,7 @@ def enum_keyvaults(
              "(one keyvault data-plane call per vault) — -no-check-access skips it on large subscriptions"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Key Vaults in a subscription and their exposure-relevant
-    settings (access policies, RBAC authorization, network ACLs, soft delete/purge protection)."""
+    """Enumerate Key Vaults in a subscription and their exposure-relevant settings"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -162,8 +161,7 @@ def enum_secrets(
     client_id: str = typer.Option(None, "-clientid", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """List secret names/metadata in a vault (values are never included here —
-    use `enum secret-value` to pull one out)."""
+    """List secret names/metadata in a vault"""
     tenant, headers = prepare_session(tenant, client_id, "keyvault")
     url = f"https://{vault}.vault.azure.net/secrets"
     params = {"api-version": API_VERSIONS["keyvault"]}
@@ -222,8 +220,7 @@ def enum_keys(
     client_id: str = typer.Option(None, "-clientid", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """List key names/metadata in a vault (Key Vault never returns raw key
-    material for List/Get — only public key info for asymmetric keys)."""
+    """List key names/metadata in a vault."""
     tenant, headers = prepare_session(tenant, client_id, "keyvault")
     url = f"https://{vault}.vault.azure.net/keys"
     params = {"api-version": API_VERSIONS["keyvault"]}

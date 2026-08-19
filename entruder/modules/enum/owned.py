@@ -40,9 +40,7 @@ def enum_owned(
              "transitive membership (default on)"),
     output: OutputFormat = output_option(),
 ):
-    """Enumerate everything the current user owns (objects they can modify to
-    escalate) or controls via membership, the escalation blast radius of this
-    identity. Requires a delegated (user) session as /me is empty for app-only tokens."""
+    """Enumerate everything the current user owns (objects they can modify to escalate) or controls via membership, the escalation blast radius of this identity."""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 

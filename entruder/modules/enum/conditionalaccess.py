@@ -87,12 +87,7 @@ def enum_ca_policies(
     client_id: str = typer.Option(None, "-clientid", help="Client ID"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Conditional Access policies via Microsoft Graph: who/what
-    each one applies to, under what conditions, what it requires, and
-    whether it's actually enforced (state=enabled) or just a disabled/
-    report-only draft. Requires Policy.Read.All (Security Reader,
-    Conditional Access Administrator, Global Administrator, or an
-    equivalent app role)."""
+    """Enumerate Conditional Access policies via Microsoft Graph"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 

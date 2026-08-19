@@ -234,8 +234,7 @@ def enum_storage_accounts(
              "whether you could — opt-in since this materializes live key values in the output"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate storage accounts in a subscription and their exposure-relevant
-    settings (anonymous blob access, shared-key auth, network ACLs, TLS)."""
+    """Enumerate storage accounts in a subscription and their exposure-relevant settings."""
     # explicitly ask for subid
     if not sub:
          console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
@@ -284,10 +283,7 @@ def enum_containers(
     output: OutputFormat = output_option(),
 ):
     """
-    List containers in a storage account via the Blob Service List Containers
-    operation. Azure does not support anonymous container listing at the
-    account level regardless of container public-access settings, so this
-    always needs a valid storage token
+    List containers in a storage account via the Blob Service List Containers operation. 
     """
     headers = _storage_headers(tenant, client_id)
     endpoint = f"https://{account}.blob.core.windows.net"
@@ -320,9 +316,7 @@ def enum_blobs(
     client_id: str = typer.Option(None, "-clientid", help="Client ID (optional — used to attach a cached storage token)"),
     output: OutputFormat = output_option(),
 ):
-    """List blobs in a container via the Blob Service List Blobs operation. Run
-    with no -tenant/-clientid (and no active cached session) to test
-    anonymous/public exposure directly"""
+    """List blobs in a container via the Blob Service List Blobs operation. Run with no -tenant/-clientid and user session to test anonymous/public exposure directly"""
     headers = _storage_headers(tenant, client_id)
     endpoint = f"https://{account}.blob.core.windows.net"
 

@@ -273,6 +273,14 @@ class Columns:
         ("Modified",          "modifiedDateTime"),
     ]
 
+    ROLE = [
+        ("Role Name",       "roleName"),
+        ("Principal",       "principalName"),
+        ("Principal Id",    "principalId"),
+        ("Directory Scope", "directoryScopeId"),
+        ("App Scope",       "appScopeId"),
+    ]
+
     TOKEN = [
         ("Plane",                 "plane"),
         ("Identity Type",         "identity_type"),

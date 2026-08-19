@@ -84,10 +84,7 @@ def enum_applications(
              "(requires a delegated session, ropc/device/authcode, not app-only secret/cert/foci/kerberos)"),
     output: OutputFormat = output_option(),
     ):
-    """Enumerate Entra app registrations (the /applications object — distinct
-    from `enum serviceprincipals`, which is each app's tenant-local instance):
-    requested API permissions, redirect URIs, and credentials on the app
-    registration itself."""
+    """Enumerate Entra app registrations, requested API permissions, redirect URIs, and credentials on the app registration itself."""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph_url_base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 

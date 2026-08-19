@@ -62,6 +62,7 @@ def enum_userinfo(
     username: str = typer.Option(...,"-upn",help="userPrincipalName/email of the target user"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
+    """Query a specific user's information, provides more details than the users command"""
     from entruder.globals import MFA_EXCLUSION_PATTERNS
     tenant, headers = prepare_session(tenant, client_id, "graph")
 

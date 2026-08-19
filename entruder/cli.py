@@ -19,8 +19,6 @@ def main(
     STATE.verbose = verbose
     STATE.no_progress = no_progress
 
-# verbosity
-
 
 # Initializing modules
 app.add_typer(enum_app,name="enum")

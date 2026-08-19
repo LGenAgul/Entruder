@@ -17,4 +17,5 @@ from . import (
     webapps,
     conditionalaccess,
     privileges,
+    roles
 )
