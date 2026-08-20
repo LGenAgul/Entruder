@@ -12,7 +12,7 @@ from entruder.utils import (
     output_option,
 )
 
-from ._shared import enum_app, console, columns, prepare_session, resolve_app_roles, resolve_principal_names
+from ._shared import info_app, console, columns, prepare_session, resolve_app_roles, resolve_principal_names
 
 
 def _role_definition_names(headers, role_definition_ids):
@@ -77,7 +77,7 @@ def _arm_pim_eligibility(headers, arm_url_base):
     return [{**a.get("properties", {}), "id": a.get("id")} for a in result["value"]]
 
 
-@enum_app.command("privs")
+@info_app.command("privs")
 @handle_cli_errors
 def enum_priv(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),

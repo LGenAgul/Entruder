@@ -13,7 +13,5 @@ from . import (
     foci,
     kerberos,
     authcode,
-    mfasweep,
-    uasweep,
     token,
 )

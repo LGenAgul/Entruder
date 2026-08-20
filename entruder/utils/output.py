@@ -366,6 +366,28 @@ def format_access_policies(value) -> str:
     return "\n".join(lines)
 
 
+def format_brute_containers(value) -> str:
+    """Compact cell for `brute blobs`' per-account container hits: name,
+    whether it's anonymously public (List Blobs succeeded with no token), and
+    every blob name for the public ones — capped here for table/csv display;
+    json/xml bypass columns entirely and carry the full `blobs` list."""
+    lines = []
+    for c in value or []:
+        if not isinstance(c, dict):
+            lines.append(str(c))
+            continue
+        marker = "PUBLIC" if c.get("public") else "private"
+        blobs = c.get("blobs") or []
+        line = f"{c.get('name', 'unknown')}  [{marker}]"
+        if blobs:
+            shown = blobs[:10]
+            line += "\n    " + "\n    ".join(shown)
+            if len(blobs) > len(shown):
+                line += f"\n    ... +{len(blobs) - len(shown)} more"
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def format_directory_role_eligibilities(value) -> str:
     """Compact cell for Entra PIM-eligible directory roles: roles a principal
     could self-activate into but doesn't currently hold, so they're invisible

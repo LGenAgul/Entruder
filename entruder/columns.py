@@ -14,6 +14,7 @@ from entruder.utils import (
     format_access_policies,
     format_string_list,
     format_dict_summary,
+    format_brute_containers,
     )
 
 
@@ -336,6 +337,13 @@ class Columns:
         ("Last Sign-In", "approximateLastSignInDateTime"),
         ("Owners",       "registeredOwners", pluck("userPrincipalName")),
         ("Owner Roles",  "ownerRoles", format_string_list),
+    ]
+
+    # produced by `brute blobs` — one row per -account given, with every
+    # container name found to exist (public or not) under it.
+    BRUTE_BLOB = [
+        ("Account",    "account"),
+        ("Containers", "containers", format_brute_containers),
     ]
 
     ROLE = [

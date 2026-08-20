@@ -1,5 +1,5 @@
 from .http import request_json
-from .logging import vprint, report_error, handle_cli_errors, iter_with_progress
+from .logging import vprint, report_error, handle_cli_errors, iter_with_progress, iter_futures_with_progress
 from .auth import (
     build_cert_credential,
     build_msal_http_client,
@@ -47,5 +47,6 @@ from .output import (render
                      , format_access_policies
                      , format_string_list
                      , format_dict_summary
+                     , format_brute_containers
                      ,
                      output_option)

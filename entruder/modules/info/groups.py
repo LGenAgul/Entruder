@@ -11,10 +11,10 @@ from entruder.utils import (
     output_option,
 )
 
-from ._shared import enum_app, console, columns, prepare_session
+from ._shared import info_app, console, columns, prepare_session
 
 
-@enum_app.command("groups")
+@info_app.command("groups")
 @handle_cli_errors
 def enum_groups(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),

@@ -10,10 +10,10 @@ from entruder.utils import (
     save_session,
 )
 
-from ._shared import login_app, console, classify_ropc_result
+from ._shared import brute_app, console, classify_ropc_result
 
 
-@login_app.command("uasweep")
+@brute_app.command("uasweep")
 @handle_cli_errors
 def login_uasweep(
     tenant:      str = typer.Option(None, "-tenant", help="Tenant ID"),

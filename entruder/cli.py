@@ -1,6 +1,8 @@
 import typer
 from entruder.modules.enum import enum_app
+from entruder.modules.info import info_app
 from entruder.modules.login import login_app
+from entruder.modules.brute import brute_app
 from entruder.modules.analyze import analyze_app
 from entruder.static import CACHE_DIR,SESSIONS_DIR,STATE
 
@@ -23,7 +25,9 @@ def main(
 
 # Initializing modules
 app.add_typer(enum_app,name="enum")
+app.add_typer(info_app,name="info")
 app.add_typer(login_app,name="login")
+app.add_typer(brute_app,name="brute")
 app.add_typer(analyze_app,name="analyze")
 
 # initializing the cache directory

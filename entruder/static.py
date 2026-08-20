@@ -140,6 +140,15 @@ USER_AGENT_SWEEP = {
     "playstation":     "Mozilla/5.0 (PlayStation 5 3.03/SmartTV) AppleWebKit/605.1.15 (KHTML, like Gecko"
 }
 
+# Container names `brute blobs` tries against every -account given, probing
+# each for anonymous List Blobs access (the "Container" public access level).
+STORAGE_CONTAINER_GUESSES = [
+    "$web", "data", "backup", "backups", "files", "public", "assets", "static",
+    "media", "logs", "uploads", "images", "documents", "docs", "reports",
+    "exports", "archive", "config", "configs", "secrets", "private", "internal",
+    "test", "dev", "prod", "www", "content", "storage",
+]
+
 MFA_EXCLUSION_PATTERNS = [
     "mfa", "no-mfa", "nomfa", "yolo", "exclude", "bypass", "exempt"
 ]

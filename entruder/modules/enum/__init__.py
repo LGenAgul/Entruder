@@ -5,9 +5,6 @@ effects is what actually wires the commands up."""
 
 from ._shared import enum_app
 from . import (
-    tenant,
-    users,
-    groups,
     serviceprincipals,
     applications,
     owned,
@@ -16,7 +13,6 @@ from . import (
     keyvault,
     webapps,
     conditionalaccess,
-    privileges,
     roles,
     devices,
     consents,
