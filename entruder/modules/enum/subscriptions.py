@@ -1,6 +1,6 @@
 import typer
 
-from entruder.globals import API_VERSIONS
+from entruder.static import API_VERSIONS
 from entruder.utils import (
     parse_error,
     request_json,
@@ -14,7 +14,7 @@ from entruder.utils import (
 from ._shared import enum_app, console, columns, prepare_session
 
 
-@enum_app.command("subscriptions")
+@enum_app.command("subs")
 @handle_cli_errors
 def enum_subscriptions(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),

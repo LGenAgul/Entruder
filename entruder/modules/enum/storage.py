@@ -3,7 +3,7 @@ import httpx
 import fnmatch
 import xml.etree.ElementTree as etree
 
-from entruder.globals import API_VERSIONS, HTTP_TIMEOUT
+from entruder.static import API_VERSIONS, HTTP_TIMEOUT
 from entruder.utils import (
     parse_error,
     parse_xml_tag,

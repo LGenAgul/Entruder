@@ -1,6 +1,6 @@
 import typer
 
-from entruder.globals import API_VERSIONS, APP_PARAMS
+from entruder.static import API_VERSIONS, APP_PARAMS
 from entruder.utils import (
     request_json,
     vprint,
@@ -74,7 +74,7 @@ def _project_application(app):
     return app
 
 
-@enum_app.command("applications")
+@enum_app.command("apps")
 @handle_cli_errors
 def enum_applications(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),

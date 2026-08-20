@@ -2,7 +2,7 @@ import typer
 import httpx
 import xml.etree.ElementTree as etree
 
-from entruder.globals import HTTP_TIMEOUT
+from entruder.static import HTTP_TIMEOUT
 from entruder.utils import (
     parse_error,
     parse_xml_tag,

@@ -2,6 +2,7 @@ from .http import request_json
 from .logging import vprint, report_error, handle_cli_errors, iter_with_progress
 from .auth import (
     build_cert_credential,
+    build_msal_http_client,
     device_login_v1,
     device_login_v2,
     auth_code_login,

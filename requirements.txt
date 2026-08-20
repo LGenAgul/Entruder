@@ -1,6 +1,7 @@
 httpx
 typer
 msal
+requests
 rich
 cryptography
 jsonschema

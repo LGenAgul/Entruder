@@ -1,7 +1,7 @@
 import typer
 from rich.console import Console
 from datetime import datetime, timezone
-from entruder.globals import FOCI_CLIENTS, DIRECTORY_ROLES, DIRECTORY_ROLE_TIER_ORDER
+from entruder.static import FOCI_CLIENTS, DIRECTORY_ROLES, DIRECTORY_ROLE_TIER_ORDER
 from entruder.utils import (
     decode_jwt,
     decode_jwt_header,

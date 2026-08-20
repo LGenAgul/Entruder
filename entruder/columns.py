@@ -273,6 +273,71 @@ class Columns:
         ("Modified",          "modifiedDateTime"),
     ]
 
+    AUTOMATION_ACCOUNT = [
+        ("Name",                   "name"),
+        ("Resource Group",         "resource_group"),
+        ("Location",               "location"),
+        ("State",                  "state"),
+        ("SKU",                    "sku"),
+        ("Public Network",         "public_network"),
+        ("Local Auth Disabled",    "disable_local_auth"),
+        ("Identity Type",          "identity_type"),
+        ("Identity Principal Id",  "identity_principal_id"),
+        ("Created",                "created"),
+    ]
+
+    RUNBOOK = [
+        ("Name",          "name"),
+        ("Type",          "runbook_type"),
+        ("State",         "state"),
+        ("Log Verbose",   "log_verbose"),
+        ("Log Progress",  "log_progress"),
+        ("Description",   "description"),
+        ("Created",       "created"),
+        ("Last Modified", "last_modified"),
+    ]
+
+    RUNBOOK_CONTENT = [
+        ("Name",    "name"),
+        ("Content", "content"),
+    ]
+
+    AUTOMATION_VARIABLE = [
+        ("Name",          "name"),
+        ("Encrypted",     "encrypted"),
+        ("Value",         "value"),
+        ("Description",   "description"),
+        ("Created",       "created"),
+        ("Last Modified", "last_modified"),
+    ]
+
+    CONSENT = [
+        ("Client App",   "clientAppName"),
+        ("Client SP Id", "clientId"),
+        ("Resource App", "resourceAppName"),
+        ("Resource SP Id", "resourceId"),
+        ("Consent Type", "consentType"),
+        ("Principal",    "principalName"),
+        ("Scopes",       "scopes", format_string_list),
+    ]
+
+    DEVICE = [
+        ("Display Name", "displayName"),
+        ("Device Id",    "deviceId"),
+        ("OS",           "operatingSystem"),
+        ("OS Version",   "operatingSystemVersion"),
+        ("Trust Type",   "trustType"),
+        ("Ownership",    "deviceOwnership"),
+        ("Enabled",      "accountEnabled"),
+        ("Compliant",    "isCompliant"),
+        ("Managed",      "isManaged"),
+        ("MDM App Id",   "mdmAppId"),
+        ("Registered",   "registrationDateTime"),
+        ("Last Sign-In", "approximateLastSignInDateTime"),
+        ("Owners",       "registeredOwners", pluck("userPrincipalName")),
+        ("Owner Roles",  "ownerRoles", format_string_list),
+    ]
+
     ROLE = [
         ("Role Name",       "roleName"),
         ("Principal",       "principalName"),

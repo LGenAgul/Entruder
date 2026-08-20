@@ -5,7 +5,7 @@ import base64
 
 
 def parse_error(description: str) -> str:
-     from entruder.globals import ERROR_CODES
+     from entruder.static import ERROR_CODES
      match = re.match(r"AADSTS\d+", description or "")
      identifier = match.group() if match else None
      return ERROR_CODES.get(identifier, description) if identifier else description
@@ -46,11 +46,11 @@ def csv_to_list(csv: str) -> list:
       return [item.strip() for item in csv.split(",") if item.strip()]
 
 def resolve_resource(resource: str) -> str:
-    from entruder.globals import PLANES
+    from entruder.static import PLANES
     return PLANES.get(resource, resource)
 
 def resolve_plane_from_resource(resource: str) -> str:
-    from entruder.globals import RESOURCE_SHORTCUTS
+    from entruder.static import RESOURCE_SHORTCUTS
 
     if resource in RESOURCE_SHORTCUTS:
         return resource

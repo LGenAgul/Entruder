@@ -10,7 +10,7 @@ import msal
 import typer
 from rich.console import Console
 
-from entruder.globals import RESOURCE_SHORTCUTS
+from entruder.static import RESOURCE_SHORTCUTS
 from .http import request_json
 from .logging import vprint
 from .parser import csv_to_list, parse_error, parse_token, resolve_plane_from_resource
@@ -40,7 +40,7 @@ def acquire_for_resources(resources: list, acquire, console, output_tokens=False
     return tokens
 
 
-def refresh_access_token(tenant, client_id, refresh_token, resource) -> dict:
+def refresh_access_token(tenant, client_id, refresh_token, resource, headers=None) -> dict:
     """Redeem a refresh token for a fresh access token on `resource` via the
     v1 token endpoint. Shared by `login refresh`/`login foci` (explicit,
     user-invoked redemption) and require_session's silent refresh-on-expiry —
@@ -55,7 +55,24 @@ def refresh_access_token(tenant, client_id, refresh_token, resource) -> dict:
             "refresh_token": refresh_token,
             "resource": resource,
         },
+        headers=headers,
     )
+
+
+def build_msal_http_client(user_agent: str = None):
+    """
+    Build a requests.Session for MSAL's `http_client` constructor param with
+    the User-Agent header overridden. Returns None when no override is
+    requested so callers can pass the result straight through and let MSAL
+    fall back to its own default session.
+    """
+    if not user_agent:
+        return None
+
+    import requests
+    session = requests.Session()
+    session.headers["User-Agent"] = user_agent
+    return session
 
 
 def build_cert_credential(cert_path: str, key_path: str, passphrase: str = None) -> dict:
@@ -82,14 +99,16 @@ def build_cert_credential(cert_path: str, key_path: str, passphrase: str = None)
     return credential
 
 
-def device_login_v1(resource, tenant, client_id) -> dict:
+def device_login_v1(resource, tenant, client_id, user_agent=None) -> dict:
     """
     Authenticate using device code flow for v1 endpoint, done directly via raw http requests.
     """
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                         "AppleWebKit/537.36 (KHTML, like Gecko) "
-                         "Chrome/103.0.0.0 Safari/537.36"
+        "User-Agent": user_agent or (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/103.0.0.0 Safari/537.36"
+        )
     }
     resource_url = RESOURCE_SHORTCUTS.get(resource, resource)
     # Initialize device code flow to receive the user code
@@ -153,11 +172,15 @@ def device_login_v1(resource, tenant, client_id) -> dict:
     raise typer.Exit(1)
 
 
-def device_login_v2(tenant, client_id, scopes) -> dict:
+def device_login_v2(tenant, client_id, scopes, user_agent=None) -> dict:
     """
     Authenticate using device code flow for v2 endpoint, using MSAL library for handling the flow.
     """
-    app = msal.PublicClientApplication(client_id, authority=f"https://login.microsoftonline.com/{tenant}")
+    app = msal.PublicClientApplication(
+        client_id,
+        authority=f"https://login.microsoftonline.com/{tenant}",
+        http_client=build_msal_http_client(user_agent),
+    )
 
     vprint(f"Initiating v2 device flow (scopes={csv_to_list(scopes)})")
     flow = app.initiate_device_flow(scopes=csv_to_list(scopes))
@@ -262,7 +285,7 @@ def _interactive_auth_code(tenant, client_id, scope_param, redirect_uri, pkce, o
 
 def auth_code_login(
     tenant, client_id, scopes, redirect_uri,
-    client_secret=None, code=None, verifier=None, pkce=True, open_browser=True,
+    client_secret=None, code=None, verifier=None, pkce=True, open_browser=True, user_agent=None,
 ) -> dict:
     scope_list = csv_to_list(scopes)
     if any(s.endswith("/.default") or s == ".default" for s in scope_list):
@@ -295,6 +318,7 @@ def auth_code_login(
         "POST",
         f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
         data=data,
+        headers={"User-Agent": user_agent} if user_agent else None,
     )
 
     if "access_token" not in result:

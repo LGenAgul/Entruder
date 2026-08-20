@@ -1,6 +1,6 @@
 import typer
 
-from entruder.globals import API_VERSIONS
+from entruder.static import API_VERSIONS
 from entruder.utils import (
     parse_error,
     request_json,

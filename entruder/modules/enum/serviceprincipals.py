@@ -1,6 +1,6 @@
 import typer
 
-from entruder.globals import API_VERSIONS, SP_PARAMS
+from entruder.static import API_VERSIONS, SP_PARAMS, MS_FIRST_PARTY_TENANT_ID
 from entruder.utils import (
     parse_error,
     request_json,
@@ -14,7 +14,7 @@ from entruder.utils import (
 from ._shared import enum_app, console, columns, prepare_session
 
 
-@enum_app.command("serviceprincipals")
+@enum_app.command("sp")
 @handle_cli_errors
 def enum_serviceprincipals(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
@@ -22,6 +22,9 @@ def enum_serviceprincipals(
     owned: bool = typer.Option(False, "-owned",
         help="Only show service principals owned by the current signed-in user "
              "(requires a delegated session, ropc/device/authcode, not app-only secret/cert/foci/kerberos)"),
+    non_default: bool = typer.Option(False, "-non-default",
+        help="Hide Microsoft first-party service principals (Graph, Exchange Online, Teams, etc.) "
+             "to cut through the ~200-300 that exist by default in every tenant"),
     output: OutputFormat = output_option(),
     ):
     """Enumerate service principals via Microsoft Graph, using a saved graph session"""
@@ -55,7 +58,15 @@ def enum_serviceprincipals(
         service_principals.extend(batch)
         url = result.get("@odata.nextLink")
 
+    if non_default:
+        service_principals = [
+            sp for sp in service_principals
+            if sp.get("appOwnerOrganizationId") != MS_FIRST_PARTY_TENANT_ID
+        ]
+
     title = f"Service Principals in {tenant}" + (" (owned by current user)" if owned else "")
+    if non_default:
+        title += " (non-default)"
     render(console, title, columns.SP, service_principals, output=output,
            xml_root_tag="serviceprincipals", xml_item_tag="serviceprincipal")
     if output == OutputFormat.table:

@@ -1,7 +1,7 @@
 import typer
 import httpx
 
-from entruder.globals import API_VERSIONS, HTTP_TIMEOUT
+from entruder.static import API_VERSIONS, HTTP_TIMEOUT
 from entruder.utils import (
     parse_error,
     request_json,

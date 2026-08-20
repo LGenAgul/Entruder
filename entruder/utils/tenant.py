@@ -3,7 +3,7 @@ import re
 
 
 def save_domain_mapping(domain: str, tenant: str) -> None:
-    from entruder.globals import DOMAINS_FILE, CACHE_DIR
+    from entruder.static import DOMAINS_FILE, CACHE_DIR
     CACHE_DIR.mkdir(mode=0o700, exist_ok=True)
     domains = {}
     if DOMAINS_FILE.exists():
@@ -25,7 +25,7 @@ def resolve_tenant_from_domain(tenant: str):
     if not is_domain(tenant):
          return tenant
 
-    from entruder.globals import DOMAINS_FILE
+    from entruder.static import DOMAINS_FILE
     if not DOMAINS_FILE.exists():
         return None
 

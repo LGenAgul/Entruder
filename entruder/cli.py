@@ -2,7 +2,7 @@ import typer
 from entruder.modules.enum import enum_app
 from entruder.modules.login import login_app
 from entruder.modules.analyze import analyze_app
-from entruder.globals import CACHE_DIR,SESSIONS_DIR,STATE
+from entruder.static import CACHE_DIR,SESSIONS_DIR,STATE
 
 app = typer.Typer(
     name = "entruder",
@@ -16,6 +16,7 @@ def main(
     no_progress: bool = typer.Option(False, "-no-progress", help="Don't show the live progress spinner for multi call commands")
 ):
     """Global options applied to every command."""
+    
     STATE.verbose = verbose
     STATE.no_progress = no_progress
 

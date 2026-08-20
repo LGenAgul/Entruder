@@ -14,7 +14,7 @@ _status_console = Console(stderr=True)
 
 
 def vprint(message: str) -> None:
-    from entruder.globals import STATE
+    from entruder.static import STATE
     if STATE.verbose:
         _console.print(f"[dim][*] {message}[/dim]")
 
@@ -32,7 +32,7 @@ def iter_with_progress(items, description: str, key=None):
     (account name, vault name, ...); omit for a plain counter. Clears itself
     once the loop finishes rather than leaving scrollback clutter.
     """
-    from entruder.globals import STATE
+    from entruder.static import STATE
 
     items = list(items)
     if not items:
@@ -56,7 +56,7 @@ def iter_with_progress(items, description: str, key=None):
 
 
 def report_error(exc: Exception, console: Console = None) -> None:
-    from entruder.globals import STATE
+    from entruder.static import STATE
     console = console or _console
     if STATE.verbose:
         console.print_exception()

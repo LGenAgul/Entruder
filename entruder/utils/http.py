@@ -4,7 +4,7 @@ import httpx
 
 def request_json(method: str, url: str, **kwargs) -> dict:
 
-    from entruder.globals import HTTP_TIMEOUT
+    from entruder.static import HTTP_TIMEOUT
     kwargs.setdefault("timeout", HTTP_TIMEOUT)
     vprint(f"{method} {url}")
     response = httpx.request(method, url, **kwargs)

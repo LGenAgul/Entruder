@@ -1,6 +1,6 @@
 import typer
 
-from entruder.globals import (
+from entruder.static import (
     API_VERSIONS,
     BASIC_FIELDS,
     BASIC_PARAMS,
@@ -63,7 +63,7 @@ def enum_userinfo(
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Query a specific user's information, provides more details than the users command"""
-    from entruder.globals import MFA_EXCLUSION_PATTERNS
+    from entruder.static import MFA_EXCLUSION_PATTERNS
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/users/{username}"
@@ -103,3 +103,5 @@ def enum_userinfo(
     ]
 
     render(console, f"Information for {username}", columns.USERINFO, result, output=output, xml_item_tag="user")
+
+

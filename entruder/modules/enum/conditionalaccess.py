@@ -1,7 +1,7 @@
 import re
 import typer
 
-from entruder.globals import API_VERSIONS, DIRECTORY_ROLES
+from entruder.static import API_VERSIONS, DIRECTORY_ROLES
 from entruder.utils import (
     handle_cli_errors,
     render,

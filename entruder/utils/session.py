@@ -2,7 +2,7 @@
 from .logging import vprint
 from .auth import refresh_access_token
 from .parser import parse_token, parse_error
-from entruder.globals import SESSIONS_DIR, EXPIRY_BUFFER, ACTIVE_FILE, RESOURCE_SHORTCUTS
+from entruder.static import SESSIONS_DIR, EXPIRY_BUFFER, ACTIVE_FILE, RESOURCE_SHORTCUTS
 import json
 import time
 
@@ -47,7 +47,7 @@ SESSION_SCHEMA = {
 }
 
 def initialize_tenant_cache(tenant: str, client_id: str) -> None:
-    from entruder.globals import CACHE_DIR
+    from entruder.static import CACHE_DIR
     CACHE_DIR.mkdir(mode=0o700, exist_ok=True)
     body = {"tenant": tenant, "client_id": client_id}
     ACTIVE_FILE.write_text(json.dumps(body, indent=2))
