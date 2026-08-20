@@ -339,6 +339,20 @@ class Columns:
         ("Owner Roles",  "ownerRoles", format_string_list),
     ]
 
+    # members/scoped_role_members are only populated when `enum au` is run
+    # with -members/-scoped-roles — absent otherwise, which pluck/
+    # format_string_list both render as an empty cell rather than an error.
+    ADMIN_UNIT = [
+        ("Display Name",       "displayName"),
+        ("Id",                 "id"),
+        ("Description",        "description"),
+        ("Visibility",         "visibility"),
+        ("Membership Type",    "membershipType"),
+        ("Membership Rule",    "membershipRule"),
+        ("Members",            "members", pluck("userPrincipalName")),
+        ("Scoped Role Members", "scoped_role_members", format_string_list),
+    ]
+
     # produced by `brute blobs` — one row per -account given, with every
     # container name found to exist (public or not) under it.
     BRUTE_BLOB = [

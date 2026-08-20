@@ -17,4 +17,5 @@ from . import (
     devices,
     consents,
     automation,
+    au
 )
