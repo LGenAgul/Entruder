@@ -5,3 +5,4 @@ requests
 rich
 cryptography
 jsonschema
+impacket

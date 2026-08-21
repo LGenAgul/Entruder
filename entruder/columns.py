@@ -15,6 +15,7 @@ from entruder.utils import (
     format_string_list,
     format_dict_summary,
     format_brute_containers,
+    format_bytes,
     )
 
 
@@ -366,6 +367,17 @@ class Columns:
         ("Principal Id",    "principalId"),
         ("Directory Scope", "directoryScopeId"),
         ("App Scope",       "appScopeId"),
+    ]
+
+    # pulled straight off the ADSync MSSQL database by `sync extract`;
+    # entropy/encrypted_configuration are raw DPAPI blob bytes.
+    ADSYNC_CONFIG = [
+        ("Target",                     "target"),
+        ("Keyset Id",                  "keyset_id"),
+        ("Instance Id",                "instance_id"),
+        ("Entropy",                    "entropy", format_bytes),
+        ("Username",  "private_configuration_xml"),
+        ("Encrypted Password",    "encrypted_configuration", format_bytes),
     ]
 
     TOKEN = [

@@ -424,6 +424,15 @@ def format_azure_role_eligibilities(value) -> str:
     return "\n\n".join(lines)
 
 
+def format_bytes(value) -> str:
+    """Compact cell for raw binary values (e.g. DPAPI entropy, encrypted blobs
+    pulled straight off a MSSQL connection): hex-encode bytes/bytearray so the
+    table doesn't print a `b'...'` repr; anything else is left as-is."""
+    if isinstance(value, (bytes, bytearray)):
+        return value.hex()
+    return "" if value is None else str(value)
+
+
 def _cell(value) -> str:
     """Flatten any value (scalar, dict, or list) into a single readable string
     for table/csv cells."""

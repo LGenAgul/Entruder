@@ -48,5 +48,6 @@ from .output import (render
                      , format_string_list
                      , format_dict_summary
                      , format_brute_containers
+                     , format_bytes
                      ,
                      output_option)
