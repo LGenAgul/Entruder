@@ -17,5 +17,9 @@ from . import (
     devices,
     consents,
     automation,
-    au
+    au,
+    tenant,
+    privileges,
+    users,
+    groups,
 )

@@ -16,10 +16,10 @@ from entruder.utils import (
     save_domain_mapping,
 )
 
-from ._shared import info_app, console, columns
+from ._shared import enum_app, console, columns
 
 
-@info_app.command("tenant")
+@enum_app.command("tenant")
 @handle_cli_errors
 def enum_tenant(
     domain: str = typer.Option(..., "-domain", help="Domain Name"),

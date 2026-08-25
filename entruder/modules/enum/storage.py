@@ -2,6 +2,7 @@ import typer
 import httpx
 import fnmatch
 import xml.etree.ElementTree as etree
+from urllib.parse import parse_qsl
 
 from entruder.static import API_VERSIONS, HTTP_TIMEOUT
 from entruder.utils import (
@@ -153,14 +154,28 @@ def _list_storage_keys(headers, account_id):
     return result["keys"]
 
 
-def _storage_headers(tenant, client_id):
-    """Best-effort auth for the blob data-plane: if a tenant/client (explicit
-    args or the active cache) resolves to a saved session with a storage
-    token, attach it. Unlike prepare_session, missing auth is NOT fatal here —
-    running with no token exercises the anonymous/public-access path, which is
-    usually the interesting security question for this tool."""
-    resolved_tenant, resolved_client_id = get_tenant_cache(tenant, client_id)
+def _parse_sas(sas):
+    """Split a SAS token into its query params so they can be merged into a
+    data-plane request. Accepts the token with or without a leading '?'.
+    Returns {} for an empty/None token."""
+    if not sas:
+        return {}
+    return dict(parse_qsl(sas.lstrip("?"), keep_blank_values=True))
+
+
+def _storage_headers(tenant, client_id, sas=None):
+    """Best-effort auth for the blob data-plane. Precedence: an explicit SAS
+    token wins (it authenticates via the query string, so no Authorization
+    header is attached); otherwise, if a tenant/client (explicit args or the
+    active cache) resolves to a saved session with a storage token, attach it.
+    Unlike prepare_session, missing auth is NOT fatal here — running with
+    neither exercises the anonymous/public-access path, which is usually the
+    interesting security question for this tool."""
     headers = {"x-ms-version": API_VERSIONS["storage_data"]}
+    if sas:
+        vprint("Using provided SAS token for storage data-plane auth")
+        return headers
+    resolved_tenant, resolved_client_id = get_tenant_cache(tenant, client_id)
     token = None
     if resolved_tenant and resolved_client_id:
         session = get_session(resolved_tenant, resolved_client_id)
@@ -280,18 +295,20 @@ def enum_containers(
     account: str = typer.Option(..., "-account", help="Storage account name (without .blob.core.windows.net)"),
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID (optional — used to attach a cached storage token)"),
     client_id: str = typer.Option(None, "-clientid", help="Client ID (optional — used to attach a cached storage token)"),
+    sas: str = typer.Option(None, "-sas", help="Account SAS token to authenticate with instead of a session token (needs service resource type + list permission)"),
     output: OutputFormat = output_option(),
 ):
     """
-    List containers in a storage account via the Blob Service List Containers operation. 
+    List containers in a storage account via the Blob Service List Containers operation.
     """
-    headers = _storage_headers(tenant, client_id)
+    headers = _storage_headers(tenant, client_id, sas)
+    sas_params = _parse_sas(sas)
     endpoint = f"https://{account}.blob.core.windows.net"
 
     containers = []
     marker = None
     while True:
-        params = {"comp": "list", "maxresults": "5000"}
+        params = {"comp": "list", "maxresults": "5000", **sas_params}
         if marker:
             params["marker"] = marker
         root = _blob_xml_request(f"{endpoint}/", headers, params)
@@ -314,16 +331,18 @@ def enum_blobs(
     prefix: str = typer.Option(None, "-prefix", help="Only list blobs whose name starts with this prefix"),
     tenant: str = typer.Option(None, "-tenant", help="Tenant ID (optional — used to attach a cached storage token)"),
     client_id: str = typer.Option(None, "-clientid", help="Client ID (optional — used to attach a cached storage token)"),
+    sas: str = typer.Option(None, "-sas", help="Account or service SAS token to authenticate with instead of a session token (needs container list permission)"),
     output: OutputFormat = output_option(),
 ):
     """List blobs in a container via the Blob Service List Blobs operation. Run with no -tenant/-clientid and user session to test anonymous/public exposure directly"""
-    headers = _storage_headers(tenant, client_id)
+    headers = _storage_headers(tenant, client_id, sas)
+    sas_params = _parse_sas(sas)
     endpoint = f"https://{account}.blob.core.windows.net"
 
     blobs = []
     marker = None
     while True:
-        params = {"restype": "container", "comp": "list", "maxresults": "5000"}
+        params = {"restype": "container", "comp": "list", "maxresults": "5000", **sas_params}
         if prefix:
             params["prefix"] = prefix
         if marker:

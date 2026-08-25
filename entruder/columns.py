@@ -40,6 +40,18 @@ class Columns:
         ("Custom Security Attributes", "customSecurityAttributes", format_custom_attributes),
     ]
 
+    AZSYNC_USER = [
+        ("Display Name", "displayName"),
+        ("UPN", "userPrincipalName"),
+        ("Enabled", "accountEnabled"),
+        ("On-Prem Domain", "onPremisesDomainName"),
+        ("On-Prem SAM Account", "onPremisesSamAccountName"),
+        ("On-Prem Distinguished Name", "onPremisesDistinguishedName"),
+        ("On-Prem Immutable Id", "onPremisesImmutableId"),
+        ("Last Sync", "onPremisesLastSyncDateTime"),
+        ("Sync Errors", "onPremisesProvisioningErrors"),
+    ]
+
     GROUP = [
         ("Group Id",    "id"),
         ("Display Name",    "displayName"),

@@ -1,11 +1,10 @@
 import typer
 from entruder.modules.enum import enum_app
-from entruder.modules.info import info_app
 from entruder.modules.login import login_app
 from entruder.modules.brute import brute_app
 from entruder.modules.analyze import analyze_app
 from entruder.modules.exploit import exploit_app
-from entruder.modules.sync import sync_app
+from entruder.modules.azsync import azsync_app
 from entruder.static import CACHE_DIR,SESSIONS_DIR,STATE
 
 app = typer.Typer(
@@ -27,12 +26,11 @@ def main(
 
 # Initializing modules
 app.add_typer(enum_app,name="enum")
-app.add_typer(info_app,name="info")
 app.add_typer(login_app,name="login")
 app.add_typer(brute_app,name="brute")
 app.add_typer(analyze_app,name="analyze")
 app.add_typer(exploit_app,name="exploit")
-app.add_typer(sync_app,name="sync")
+app.add_typer(azsync_app,name="azsync")
 
 # initializing the cache directory
 CACHE_DIR.mkdir(mode=0o700, exist_ok=True)
