@@ -33,11 +33,11 @@ def _owner_role_names(headers, graph_url_base):
 @enum_app.command("devices")
 @handle_cli_errors
 def enum_devices(
-    tenant:    str = typer.Option(None, "-tenant"),
-    client_id: str = typer.Option(None, "-clientid"),
-    role:      str = typer.Option(None, "-role",
+    tenant:    str = typer.Option(None, "-t", "--tenant"),
+    client_id: str = typer.Option(None, "-c", "--client-id"),
+    role:      str = typer.Option(None, "-r", "--role",
         help="Filter by the directory role name of a registered owner e.g. 'Global Administrator' (Optional)"),
-    upn:       str = typer.Option(None, "-upn",
+    upn:       str = typer.Option(None, "-u", "--upn",
         help="Filter by registered owner UPN (Optional)"),
     output:    OutputFormat = output_option(),
 ):

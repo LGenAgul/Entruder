@@ -15,12 +15,12 @@ from ._shared import login_app, console
 @login_app.command("token")
 @handle_cli_errors
 def login_token(
-    token:         str = typer.Option(..., "-token", help="Raw access token obtained out-of-band (e.g. an internal metadata endpoint, a captured request, another tool)"),
-    tenant:        str = typer.Option(None, "-tenant", help="Tenant ID (Optional, default: read from the token's tid claim)"),
-    client_id:     str = typer.Option(None, "-clientid", help="Client ID to file the session under (Optional, default: read from the token's appid/azp claim)"),
-    resource:      str = typer.Option(None, "-resource", help="Plane/resource this token is for, e.g. graph (Optional, default: read from the token's aud claim)"),
-    refresh_token: str = typer.Option(None, "-refreshtoken", help="Refresh token to store alongside it, if you have one (Optional)"),
-    output_tokens: bool = typer.Option(False, "-output", help="Output the token to console (Optional)"),
+    token:         str = typer.Option(..., "-k", "--token", help="Raw access token obtained out-of-band (e.g. an internal metadata endpoint, a captured request, another tool)"),
+    tenant:        str = typer.Option(None, "-t", "--tenant", help="Tenant ID (Optional, default: read from the token's tid claim)"),
+    client_id:     str = typer.Option(None, "-c", "--client-id", help="Client ID to file the session under (Optional, default: read from the token's appid/azp claim)"),
+    resource:      str = typer.Option(None, "-r", "--resource", help="Plane/resource this token is for, e.g. graph (Optional, default: read from the token's aud claim)"),
+    refresh_token: str = typer.Option(None, "-e", "--refresh-token", help="Refresh token to store alongside it, if you have one (Optional)"),
+    output_tokens: bool = typer.Option(False, "-o", "--output", help="Output the token to console (Optional)"),
 ):
     """
     Use a previously acquired access token to initialize a session here.
@@ -32,9 +32,9 @@ def login_token(
     aud = resource or claims.get("aud")
 
     missing = [flag for flag, value in (
-        ("-tenant", resolved_tenant),
-        ("-clientid", resolved_client_id),
-        ("-resource", aud),
+        ("--tenant", resolved_tenant),
+        ("--client-id", resolved_client_id),
+        ("--resource", aud),
     ) if not value]
     if missing:
         console.print(f"[bold red][-][/] Missing {', '.join(missing)} — the token didn't carry a usable claim for it")

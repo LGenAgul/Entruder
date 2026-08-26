@@ -3,11 +3,9 @@ import typer
 from entruder.static import MFA_SWEEP_RESOURCES, USER_AGENT_SWEEP
 from entruder.utils import (
     handle_cli_errors,
-    parse_token,
     request_json,
     vprint,
     require_tenant,
-    save_session,
 )
 
 from ._shared import brute_app, console, classify_ropc_result
@@ -16,13 +14,13 @@ from ._shared import brute_app, console, classify_ropc_result
 @brute_app.command("uasweep")
 @handle_cli_errors
 def login_uasweep(
-    tenant:      str = typer.Option(None, "-tenant", help="Tenant ID"),
-    username:    str = typer.Option(..., "-upn", help="Username"),
-    password:    str = typer.Option(..., "-password", help="Password"),
-    client_id:   str = typer.Option(..., "-clientid", help="Client ID to authenticate with"),
-    resource:    str = typer.Option("graph", "-resource", help="Target resource for the sweep (Optional, default: graph)"),
-    user_agent:  str = typer.Option(None, "-useragent", help="Test a single custom User-Agent instead of sweeping the built-in list"),
-    unsafe:      bool = typer.Option(False, "-unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
+    tenant:      str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    username:    str = typer.Option(..., "-u", "--upn", help="Username"),
+    password:    str = typer.Option(..., "-p", "--password", help="Password"),
+    client_id:   str = typer.Option(..., "-c", "--client-id", help="Client ID to authenticate with"),
+    resource:    str = typer.Option("graph", "-r", "--resource", help="Target resource for the sweep (Optional, default: graph)"),
+    user_agent:  str = typer.Option(None, "-a", "--user-agent", help="Test a single custom User-Agent instead of sweeping the built-in list"),
+    unsafe:      bool = typer.Option(False, "-n", "--unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
 ):
     """
     Authenticates to a resource using a  range of User-Agent strings to check whether Conditional Access fails to enforce MFA 
@@ -85,9 +83,9 @@ def login_uasweep(
         if status == "locked":
             console.print(f"[bold red][-][/] {message}")
             if not unsafe:
-                console.print("[dim]Stopping to avoid worsening the lockout. Pass -unsafe to continue anyway.[/dim]")
+                console.print("[dim]Stopping to avoid worsening the lockout. Pass --unsafe to continue anyway.[/dim]")
                 raise typer.Exit(1)
-            console.print("[dim]-unsafe set, continuing despite lockout[/dim]")
+            console.print("[dim]--unsafe set, continuing despite lockout[/dim]")
             continue
 
         # anything else: log and keep going rather than assuming it's fatal

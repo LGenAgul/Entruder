@@ -114,14 +114,14 @@ def _list_slots(headers, site_id):
 @enum_app.command("webapps")
 @handle_cli_errors
 def enum_webapps(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
-    check_config: bool = typer.Option(True, "-check-config/-no-check-config",
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    check_config: bool = typer.Option(True, "-h/-H", "--check-config/--no-check-config",
         help="Also fetch each site's actual config (TLS version, FTPS state, remote debugging, "
              "always-on) and its deployment slot names — two extra ARM calls per site, so "
-             "-no-check-config skips both on large subscriptions"),
-    list_secrets: bool = typer.Option(False, "-list-secrets",
+             "--no-check-config skips both on large subscriptions"),
+    list_secrets: bool = typer.Option(False, "-l", "--list-secrets",
         help="Retrieve each site's actual publishing credentials, app settings, and connection "
              "strings — opt-in since this materializes live secret values (three extra ARM calls per site)"),
     output: OutputFormat = output_option(OutputFormat.json),
@@ -177,14 +177,14 @@ def enum_webapps(
 @enum_app.command("webapp-slots")
 @handle_cli_errors
 def enum_webapp(
-    webapp: str = typer.Option(..., "-webapp", help="Web app (site) name"),
-    rg: str = typer.Option(..., "-rg", help="Resource group the web app lives in (see `enum webapps`)"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
-    check_config: bool = typer.Option(True, "-check-config/-no-check-config",
+    webapp: str = typer.Option(..., "-w", "--webapp", help="Web app (site) name"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the web app lives in (see `enum webapps`)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    check_config: bool = typer.Option(True, "-h/-H", "--check-config/--no-check-config",
         help="Also fetch each slot's actual config (TLS version, FTPS state, remote debugging, always-on)"),
-    list_secrets: bool = typer.Option(False, "-list-secrets",
+    list_secrets: bool = typer.Option(False, "-l", "--list-secrets",
         help="Retrieve each slot's actual publishing credentials, app settings, and connection "
              "strings — slots commonly carry different, less-watched secrets than production"),
     output: OutputFormat = output_option(OutputFormat.json),

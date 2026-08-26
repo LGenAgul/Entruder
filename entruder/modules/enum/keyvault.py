@@ -109,12 +109,12 @@ def _project_kv_item(item, thumbprint=False):
 @enum_app.command("keyvaults")
 @handle_cli_errors
 def enum_keyvaults(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
-    check_access: bool = typer.Option(True, "-check-access/-no-check-access",
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    check_access: bool = typer.Option(True, "-a/-A", "--check-access/--no-check-access",
         help="Also live-probe whether the current identity can list secrets on each vault "
-             "(one keyvault data-plane call per vault) — -no-check-access skips it on large subscriptions"),
+             "(one keyvault data-plane call per vault) — --no-check-access skips it on large subscriptions"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate Key Vaults in a subscription and their exposure-relevant settings"""
@@ -156,9 +156,9 @@ def enum_keyvaults(
 @enum_app.command("secrets")
 @handle_cli_errors
 def enum_secrets(
-    vault: str = typer.Option(..., "-vault", help="Key Vault name (without .vault.azure.net)"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
     """List secret names/metadata in a vault"""
@@ -176,11 +176,11 @@ def enum_secrets(
 @enum_app.command("secret-value")
 @handle_cli_errors
 def enum_secret_value(
-    vault: str = typer.Option(..., "-vault", help="Key Vault name (without .vault.azure.net)"),
-    secret: str = typer.Option(..., "-secret", help="Secret name"),
-    version: str = typer.Option(None, "-version", help="Specific version (defaults to the current version)"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net)"),
+    secret: str = typer.Option(..., "-s", "--secret", help="Secret name"),
+    version: str = typer.Option(None, "-e", "--version", help="Specific version (defaults to the current version)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
     """Retrieve one secret's actual value."""
@@ -199,7 +199,7 @@ def enum_secret_value(
         raise typer.Exit(1)
 
     # a resolved secret's id is always .../secrets/{name}/{version}, even when
-    # -version wasn't passed, so the version comes from the id, not the input
+    # --version wasn't passed, so the version comes from the id, not the input
     attrs = result.get("attributes", {}) or {}
     row = {
         "name":        secret,
@@ -215,9 +215,9 @@ def enum_secret_value(
 @enum_app.command("keys")
 @handle_cli_errors
 def enum_keys(
-    vault: str = typer.Option(..., "-vault", help="Key Vault name (without .vault.azure.net)"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
     """List key names/metadata in a vault."""
@@ -235,9 +235,9 @@ def enum_keys(
 @enum_app.command("certificates")
 @handle_cli_errors
 def enum_certificates(
-    vault: str = typer.Option(..., "-vault", help="Key Vault name (without .vault.azure.net)"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
     """List certificate names/metadata in a vault."""

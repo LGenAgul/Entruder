@@ -259,7 +259,7 @@ class Columns:
 
     # roles/administrative_units/owned/app_role_assignments come from /me's
     # transitive membership + ownership; azure_role_assignments is the ARM
-    # roleAssignments properties blob for the same principal on -subid.
+    # roleAssignments properties blob for the same principal on --sub-id.
     PRIV = [
         ("Display Name",          "displayName"),
         ("UPN",                   "userPrincipalName"),
@@ -353,7 +353,7 @@ class Columns:
     ]
 
     # members/scoped_role_members are only populated when `enum au` is run
-    # with -members/-scoped-roles — absent otherwise, which pluck/
+    # with --members/--scoped-roles — absent otherwise, which pluck/
     # format_string_list both render as an empty cell rather than an error.
     ADMIN_UNIT = [
         ("Display Name",       "displayName"),
@@ -366,7 +366,7 @@ class Columns:
         ("Scoped Role Members", "scoped_role_members", format_string_list),
     ]
 
-    # produced by `brute blobs` — one row per -account given, with every
+    # produced by `brute blobs` — one row per --account given, with every
     # container name found to exist (public or not) under it.
     BRUTE_BLOB = [
         ("Account",    "account"),

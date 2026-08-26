@@ -80,9 +80,9 @@ def _arm_pim_eligibility(headers, arm_url_base):
 @enum_app.command("privs")
 @handle_cli_errors
 def enum_priv(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option()
     ):
     """ Enumerate Your Users Privileges """

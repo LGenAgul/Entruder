@@ -77,9 +77,9 @@ def _project_application(app):
 @enum_app.command("apps")
 @handle_cli_errors
 def enum_applications(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    owned: bool = typer.Option(False, "-owned",
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    owned: bool = typer.Option(False, "-w", "--owned",
         help="Only show app registrations owned by the current signed-in user "
              "(requires a delegated session, ropc/device/authcode, not app-only secret/cert/foci/kerberos)"),
     output: OutputFormat = output_option(),

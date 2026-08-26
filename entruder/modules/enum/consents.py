@@ -14,11 +14,11 @@ from ._shared import enum_app, console, columns, prepare_session, graph_collect,
 @enum_app.command("consents")
 @handle_cli_errors
 def enum_consents(
-    tenant:    str = typer.Option(None, "-tenant"),
-    client_id: str = typer.Option(None, "-clientid"),
-    client:    str = typer.Option(None, "-client",
+    tenant:    str = typer.Option(None, "-t", "--tenant"),
+    client_id: str = typer.Option(None, "-c", "--client-id"),
+    client:    str = typer.Option(None, "-l", "--client",
         help="Filter by client app name e.g. 'My Risky App' (Optional)"),
-    admin_consented: bool = typer.Option(False, "-admin-consented",
+    admin_consented: bool = typer.Option(False, "-a", "--admin-consented",
         help="Only show org-wide grants (consentType 'AllPrincipals') — scopes every "
              "user in the tenant is implicitly consenting to just by using the app"),
     output:    OutputFormat = output_option(),

@@ -16,13 +16,13 @@ from ._shared import brute_app, console, classify_ropc_result
 @brute_app.command("mfasweep")
 @handle_cli_errors
 def login_mfasweep(
-    tenant:   str = typer.Option(None, "-tenant", help="Tenant ID"),
-    username: str = typer.Option(..., "-upn", help="Username"),
-    password: str = typer.Option(..., "-password", help="Password"),
-    resource: str = typer.Option(None, "-resource", help="Limit the sweep to one resource (Optional, default: sweep all known resources)"),
-    client_id: str = typer.Option(None, "-clientid", help="Limit the sweep to one client ID (Optional, default: sweep all FOCI client IDs)"),
-    unsafe: bool = typer.Option(False, "-unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
-    user_agent: str = typer.Option(None, "-useragent", help="Hold the User-Agent header fixed to this value across the whole sweep (Optional; to sweep the User-Agent itself, use `login uasweep`)"),
+    tenant:   str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    username: str = typer.Option(..., "-u", "--upn", help="Username"),
+    password: str = typer.Option(..., "-p", "--password", help="Password"),
+    resource: str = typer.Option(None, "-r", "--resource", help="Limit the sweep to one resource (Optional, default: sweep all known resources)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Limit the sweep to one client ID (Optional, default: sweep all FOCI client IDs)"),
+    unsafe: bool = typer.Option(False, "-n", "--unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
+    user_agent: str = typer.Option(None, "-a", "--user-agent", help="Hold the User-Agent header fixed to this value across the whole sweep (Optional; to sweep the User-Agent itself, use `login uasweep`)"),
 ):
     """
     Authenticates against numerous planes to check for a lack of MFA enforcment (Shoutouts to https://github.com/absolomb/FindMeAccess)
@@ -86,9 +86,9 @@ def login_mfasweep(
             if status == "locked":
                 console.print(f"[bold red][-][/] {message}")
                 if not unsafe:
-                    console.print("[dim]Stopping to avoid worsening the lockout. Pass -unsafe to continue anyway.[/dim]")
+                    console.print("[dim]Stopping to avoid worsening the lockout. Pass --unsafe to continue anyway.[/dim]")
                     raise typer.Exit(1)
-                console.print("[dim]-unsafe set, continuing despite lockout[/dim]")
+                console.print("[dim]--unsafe set, continuing despite lockout[/dim]")
                 continue
 
             # anything else: log and keep going rather than assuming it's fatal

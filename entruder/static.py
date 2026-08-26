@@ -108,6 +108,18 @@ ERROR_CODES = {
     "AADSTS90014":   "Missing required field in the request",
 }
 
+# Microsoft Graph service principal ID is the same across all tenants
+MSGRAPH_SP_ID = "00000003-0000-0000-c000-000000000002"
+
+# Common high-value app role IDs on MS Graph
+MSGRAPH_APP_ROLES = {
+    "Mail.ReadWrite.All":           "e2a3a72e-5f79-4c64-b1b1-878b674786c9",
+    "Files.ReadWrite.All":          "75359482-378d-4052-8f01-80520e7db3cd",
+    "Directory.ReadWrite.All":      "19dbc75e-c2e2-444c-a770-ec69d8559fc7",
+    "RoleManagement.ReadWrite.All": "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8",
+    "User.ReadWrite.All":           "741f803b-c850-494e-b5df-cde7c675a1ca",
+}
+
 FOCI_CLIENTS = {
     "azure_cli":        "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
     "azure_powershell": "1950a258-227b-4e31-a9cf-717495945fc2",
@@ -140,7 +152,7 @@ USER_AGENT_SWEEP = {
     "playstation":     "Mozilla/5.0 (PlayStation 5 3.03/SmartTV) AppleWebKit/605.1.15 (KHTML, like Gecko"
 }
 
-# Container names `brute blobs` tries against every -account given, probing
+# Container names `brute blobs` tries against every --account given, probing
 # each for anonymous List Blobs access (the "Container" public access level).
 STORAGE_CONTAINER_GUESSES = [
     "$web", "data", "backup", "backups", "files", "public", "assets", "static",

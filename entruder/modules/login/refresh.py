@@ -17,12 +17,12 @@ from ._shared import login_app, console
 @login_app.command("refresh")
 @handle_cli_errors
 def login_refresh(
-     tenant: str = typer.Option(..., "-tenant", help="Tenant ID"),
-     client_id: str = typer.Option(..., "-clientid", help="Client ID"),
-     refresh_token: str = typer.Option(..., "-token", help="Refresh Token"),
-     resource: str = typer.Option(None, "-resource", help="Target resource for the token"),
-     output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console"),
-     user_agent: str = typer.Option(None, "-useragent", help="Override the User-Agent header sent during authentication (Optional)"),
+     tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID"),
+     client_id: str = typer.Option(..., "-c", "--client-id", help="Client ID"),
+     refresh_token: str = typer.Option(..., "-o", "--token", help="Refresh Token"),
+     resource: str = typer.Option(None, "-r", "--resource", help="Target resource for the token"),
+     output_tokens: bool = typer.Option(False, "-u", "--output", help="Output tokens to console"),
+     user_agent: str = typer.Option(None, "-a", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),
 ):
     """
     Acquire new access tokens using a refresh token.

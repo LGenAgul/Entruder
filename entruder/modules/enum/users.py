@@ -25,8 +25,8 @@ from ._shared import enum_app, console, columns, prepare_session, resolve_app_ro
 @enum_app.command("users")
 @handle_cli_errors
 def enum_users(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
     """Enumerate directory users via Microsoft Graph, using a saved graph session"""
@@ -57,9 +57,9 @@ def enum_users(
 @enum_app.command("user")
 @handle_cli_errors
 def enum_userinfo(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    username: str = typer.Option(...,"-upn",help="userPrincipalName/email of the target user"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    username: str = typer.Option(...,"-u","--upn",help="userPrincipalName/email of the target user"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Query a specific user's information, provides more details than the users command"""

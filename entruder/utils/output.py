@@ -13,7 +13,7 @@ Adding a new command? You only need three things:
        the raw value and returns a display string; use it for nested values.
        `pluck(field)` is a ready-made formatter for "list of dicts -> one field".
 
-    2. Add the standard -output flag to the command signature:
+    2. Add the standard --output flag to the command signature:
 
            output: OutputFormat = output_option()            # defaults to table
            output: OutputFormat = output_option(OutputFormat.json)   # or json, etc.
@@ -44,18 +44,18 @@ class OutputFormat(str, Enum):
     xml = "xml"
 
 
-def output_option(default: "OutputFormat" = None, flag: str = "-output"):
-    """Reusable Typer option for the -output flag, so every command exposes it
+def output_option(default: "OutputFormat" = None, flag: tuple = ("-o", "--output")):
+    """Reusable Typer option for the --output flag, so every command exposes it
     identically. Use in a command signature:
 
         output: OutputFormat = output_option()                  # default: table
         output: OutputFormat = output_option(OutputFormat.json) # default: json
     """
-    import typer  
+    import typer
 
     return typer.Option(
         default if default is not None else OutputFormat.table,
-        flag,
+        *flag,
         help="Output format: table, csv, json, or xml",
     )
 
@@ -337,7 +337,7 @@ def format_dict_summary(value) -> str:
 
 def format_storage_keys(value) -> str:
     """Compact cell for a storage account's actual shared keys, retrieved via
-    listKeys/action (see enum storage-accounts -list-keys) — the live secret
+    listKeys/action (see enum storage-accounts --list-keys) — the live secret
     material, not just the can_list_keys permission check."""
     lines = []
     for k in value or []:

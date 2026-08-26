@@ -9,10 +9,13 @@ entruder.utils modules import entruder.static at load time — keeping the
 import local here avoids depending on module import order.
 """
 
+import re
 import typer
 from rich.console import Console
 
 _console = Console()
+
+_GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
 
 
 def resource_group_from_id(resource_id):
@@ -81,10 +84,121 @@ def resolve_principal_names(headers, graph_url_base, object_ids):
     }
 
 
+def resolve_user_id(headers, graph_url_base, user):
+    """ Resolves a userPrincipalName to its object id. If `user` is already an
+    object id (a GUID), it's returned unchanged and no request is made. """
+    from entruder.utils import request_json, vprint, parse_error
+
+    if _GUID_RE.match(user or ""):
+        return user
+
+    vprint(f"GET {graph_url_base}/users/{user}")
+    result = request_json(
+        "GET",
+        f"{graph_url_base}/users/{user}",
+        headers=headers,
+        params={"$select": "id"},
+    )
+    if "id" not in result:
+        error = result.get("error", {})
+        message = error.get("message") if isinstance(error, dict) else result.get("error_description", "Unknown error")
+        _console.print(f"[bold red][-][/] Failed to resolve user {user}: {parse_error(message)}")
+        raise typer.Exit(1)
+    return result["id"]
+
+
+def resolve_group_id(headers, graph_url_base, group):
+    """ Resolves a group displayName to its object id. If `group` is already an
+    object id (a GUID), it's returned unchanged and no request is made. Unlike
+    users, groups have no direct-lookup-by-name path in Graph, so this goes
+    through a $filter query instead. """
+    from entruder.utils import request_json, vprint, parse_error
+
+    if _GUID_RE.match(group or ""):
+        return group
+
+    escaped = (group or "").replace("'", "''")
+    vprint(f"GET {graph_url_base}/groups?$filter=displayName eq '{escaped}'")
+    result = request_json(
+        "GET",
+        f"{graph_url_base}/groups",
+        headers=headers,
+        params={"$filter": f"displayName eq '{escaped}'", "$select": "id,displayName"},
+    )
+    if "value" not in result:
+        error = result.get("error", {})
+        message = error.get("message") if isinstance(error, dict) else result.get("error_description", "Unknown error")
+        _console.print(f"[bold red][-][/] Failed to resolve group {group}: {parse_error(message)}")
+        raise typer.Exit(1)
+
+    matches = result["value"]
+    if not matches:
+        _console.print(f"[bold red][-][/] No group found with display name {group}")
+        raise typer.Exit(1)
+    if len(matches) > 1:
+        _console.print(f"[bold yellow][!][/] Multiple groups named '{group}' found, using the first match ({matches[0]['id']})")
+    return matches[0]["id"]
+
+
+def resolve_role_id(headers, graph_url_base, role):
+    """ Resolves a directory role displayName (e.g. "Global Administrator") to its
+    roleDefinition id. If `role` is already an object id (a GUID), it's returned
+    unchanged and no request is made. Goes through roleManagement/directory/
+    roleDefinitions, matching how the rest of the codebase (enum/privileges.py,
+    enum/roles.py) already addresses roles. """
+    from entruder.utils import request_json, vprint, parse_error
+
+    if _GUID_RE.match(role or ""):
+        return role
+
+    escaped = (role or "").replace("'", "''")
+    vprint(f"GET {graph_url_base}/roleManagement/directory/roleDefinitions?$filter=displayName eq '{escaped}'")
+    result = request_json(
+        "GET",
+        f"{graph_url_base}/roleManagement/directory/roleDefinitions",
+        headers=headers,
+        params={"$filter": f"displayName eq '{escaped}'", "$select": "id,displayName"},
+    )
+    if "value" not in result:
+        error = result.get("error", {})
+        message = error.get("message") if isinstance(error, dict) else result.get("error_description", "Unknown error")
+        _console.print(f"[bold red][-][/] Failed to resolve role {role}: {parse_error(message)}")
+        raise typer.Exit(1)
+
+    matches = result["value"]
+    if not matches:
+        _console.print(f"[bold red][-][/] No role found with display name {role}")
+        raise typer.Exit(1)
+    if len(matches) > 1:
+        _console.print(f"[bold yellow][!][/] Multiple roles named '{role}' found, using the first match ({matches[0]['id']})")
+    return matches[0]["id"]
+
+
 # Entra's well-known "default access" app role — assigned when a principal is
 # just enabled/SSO'd into an app that declares no real app roles, not a real
 # permission grant. Worth naming explicitly instead of a failed lookup.
 DEFAULT_APP_ROLE = "00000000-0000-0000-0000-000000000000"
+
+
+def resolve_app_role_id(role):
+    """ Resolves a well-known MS Graph app role name (e.g. "Mail.ReadWrite.All")
+    to its app role id via MSGRAPH_APP_ROLES. If `role` is already an id (a
+    GUID), it's returned unchanged and no lookup is done. Only covers MS
+    Graph's own app roles — for a third-party resource app's roles, pull them
+    from its servicePrincipal.appRoles instead (see resolve_app_roles). """
+    from entruder.static import MSGRAPH_APP_ROLES
+
+    if _GUID_RE.match(role or ""):
+        return role
+
+    if role in MSGRAPH_APP_ROLES:
+        return MSGRAPH_APP_ROLES[role]
+
+    _console.print(
+        f"[bold red][-][/] Unknown app role name '{role}' — pass a GUID or one of: "
+        f"{', '.join(MSGRAPH_APP_ROLES)}"
+    )
+    raise typer.Exit(1)
 
 
 def resolve_app_roles(headers, graph_url_base, assignments):

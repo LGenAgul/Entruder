@@ -17,12 +17,12 @@ from ._shared import enum_app, console, columns, prepare_session
 @enum_app.command("sp")
 @handle_cli_errors
 def enum_serviceprincipals(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    owned: bool = typer.Option(False, "-owned",
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    owned: bool = typer.Option(False, "-w", "--owned",
         help="Only show service principals owned by the current signed-in user "
              "(requires a delegated session, ropc/device/authcode, not app-only secret/cert/foci/kerberos)"),
-    non_default: bool = typer.Option(False, "-non-default",
+    non_default: bool = typer.Option(False, "-n", "--non-default",
         help="Hide Microsoft first-party service principals (Graph, Exchange Online, Teams, etc.) "
              "to cut through the ~200-300 that exist by default in every tenant"),
     output: OutputFormat = output_option(),
@@ -48,7 +48,7 @@ def enum_serviceprincipals(
             message = error.get("message") if isinstance(error, dict) else result.get("error_description", "Unknown error")
             console.print(f"[bold red][-][/] Graph request failed: {parse_error(message)}")
             if owned:
-                console.print("[dim]-owned requires a delegated (user) session log in via ropc/device/authcode, not secret/cert/foci/kerberos[/dim]")
+                console.print("[dim]--owned requires a delegated (user) session log in via ropc/device/authcode, not secret/cert/foci/kerberos[/dim]")
             raise typer.Exit(1)
 
         batch = result["value"]

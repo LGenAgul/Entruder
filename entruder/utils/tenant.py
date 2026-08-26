@@ -40,12 +40,12 @@ def resolve_tenant_from_domain(tenant: str):
 def require_tenant(tenant: str, console):
      import typer
      if not tenant:
-        console.print("[bold red][-][/] No -tenant provided and no active session found")
-        console.print("[dim] Pass -tenant explicitly, or run a login command first to set an active session[/dim]")
+        console.print("[bold red][-][/] No --tenant provided and no active session found")
+        console.print("[dim] Pass --tenant explicitly, or run a login command first to set an active session[/dim]")
         raise typer.Exit(1)
      resolved_tenant = resolve_tenant_from_domain(tenant)
      if not resolved_tenant:
         console.print(f"[bold red][-][/] Could not resolve {tenant} to a known tenant")
-        console.print(f"[bold][-][/] To resolve a domain to a tenant and store it in cache do: entruder enum tenant -domain <DOMAIN>")
+        console.print(f"[bold][-][/] To resolve a domain to a tenant and store it in cache do: entruder enum tenant --domain <DOMAIN>")
         raise typer.Exit(1)
      return resolved_tenant

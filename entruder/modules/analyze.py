@@ -102,18 +102,18 @@ def _analyze_claims(token: str) -> dict:
 @analyze_app.command("token")
 @handle_cli_errors
 def analyze_token(
-    token: str = typer.Option(None, "-token",
+    token: str = typer.Option(None, "-k", "--token",
         help="Raw JWT to analyze directly (e.g. a token captured out-of-band). "
              "Skips the session cache entirely — no auth needed for this, it's a local decode."),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID (optional — selects a specific cached session instead of the active one)"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID (optional — selects a specific cached session instead of the active one)"),
-    plane: str = typer.Option(None, "-plane", help="Only analyze this plane's cached token (graph/management/storage/keyvault). Default: every plane present in the session."),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional — selects a specific cached session instead of the active one)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional — selects a specific cached session instead of the active one)"),
+    plane: str = typer.Option(None, "-p", "--plane", help="Only analyze this plane's cached token (graph/management/storage/keyvault). Default: every plane present in the session."),
     output: OutputFormat = output_option(),
 ):
     """Decode and analyze a JWT: identity type (delegated vs app-only),
     directory roles held (via wids, flagged by privilege tier), MFA (amr),
-    FOCI-family membership, and expiry. With no -token, analyzes every plane
-    in the active (or -tenant/-clientid) cached session."""
+    FOCI-family membership, and expiry. With no --token, analyzes every plane
+    in the active (or --tenant/--client-id) cached session."""
     if token:
         result = _analyze_claims(token)
         if "error" in result:

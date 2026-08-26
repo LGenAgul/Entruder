@@ -17,21 +17,21 @@ from ._shared import login_app, console
 @login_app.command("authcode")
 @handle_cli_errors
 def login_authcode(
-    tenant:        str = typer.Option(...,  "-tenant",       help="Tenant ID"),
-    client_id:     str = typer.Option(...,  "-clientid",     help="Client ID"),
-    scopes:        str = typer.Option("https://graph.microsoft.com/User.Read", "-scopes",
+    tenant:        str = typer.Option(...,  "-t", "--tenant",       help="Tenant ID"),
+    client_id:     str = typer.Option(...,  "-c", "--client-id",     help="Client ID"),
+    scopes:        str = typer.Option("https://graph.microsoft.com/User.Read", "-p", "--scopes",
                                        help="Comma-separated delegated scopes to request (v2 endpoint); openid/profile/offline_access are appended automatically. Don't use .default here — that's for app-only grants (see `login secret`/`login cert`), and AAD rejects it mixed with other scopes"),
-    redirect_uri:  str = typer.Option("http://localhost:8400", "-redirecturi",
+    redirect_uri:  str = typer.Option("http://localhost:8400", "-r", "--redirect-uri",
                                        help="Redirect URI registered on the target app (must match exactly)"),
-    client_secret: str = typer.Option(None, "-secret", help="Client secret, if redeeming as a confidential client (Optional)"),
-    code:          str = typer.Option(None, "-code",
+    client_secret: str = typer.Option(None, "-s", "--secret", help="Client secret, if redeeming as a confidential client (Optional)"),
+    code:          str = typer.Option(None, "-d", "--code",
                                        help="Skip the interactive flow and redeem a code captured out-of-band, e.g. via AiTM phishing (Optional)"),
-    verifier:      str = typer.Option(None, "-verifier",
-                                       help="PKCE code_verifier to pair with -code (Optional, only if the original request used PKCE)"),
-    no_pkce:       bool = typer.Option(False, "-nopkce", help="Disable PKCE for the interactive flow (Optional)"),
-    no_browser:    bool = typer.Option(False, "-nobrowser", help="Don't auto-open a browser, just print the URL to open manually (Optional)"),
-    output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
-    user_agent:    str = typer.Option(None, "-useragent",
+    verifier:      str = typer.Option(None, "-v", "--verifier",
+                                       help="PKCE code_verifier to pair with --code (Optional, only if the original request used PKCE)"),
+    no_pkce:       bool = typer.Option(False, "-n", "--no-pkce", help="Disable PKCE for the interactive flow (Optional)"),
+    no_browser:    bool = typer.Option(False, "-b", "--no-browser", help="Don't auto-open a browser, just print the URL to open manually (Optional)"),
+    output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console (Optional)"),
+    user_agent:    str = typer.Option(None, "-u", "--user-agent",
                                        help="Override the User-Agent header sent on the token exchange (Optional; the interactive /authorize leg still goes through your real browser)"),
 ):
     """

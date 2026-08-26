@@ -14,11 +14,11 @@ from ._shared import enum_app, console, columns, prepare_session, graph_collect,
 @enum_app.command("roles")
 @handle_cli_errors
 def enum_roles(
-    tenant:    str = typer.Option(None, "-tenant"),
-    client_id: str = typer.Option(None, "-clientid"),
-    role:      str = typer.Option(None, "-role",
+    tenant:    str = typer.Option(None, "-t", "--tenant"),
+    client_id: str = typer.Option(None, "-c", "--client-id"),
+    role:      str = typer.Option(None, "-r", "--role",
         help="Filter by role name e.g. 'Global Administrator' (Optional)"),
-    upn:       str = typer.Option(None, "-upn",
+    upn:       str = typer.Option(None, "-u", "--upn",
         help="Filter by user UPN (Optional)"),
     output:    OutputFormat = output_option(),
 ):

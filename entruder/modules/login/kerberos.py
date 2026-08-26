@@ -18,13 +18,13 @@ from ._shared import login_app, console
 @login_app.command("kerberos")
 @handle_cli_errors
 def login_kerberos(
-        tenant:        str = typer.Option(...,  "-tenant",  help="Tenant ID"),
-        client_id: str = typer.Option(...,  "-clientid", help="Client ID"),
-        ccache: str = typer.Option(None,  "-ccache", help="The Kerberos ticket cache file needed for authentication (By Default will extract the $KRB5CCNAME environment variable)"),
-        domain: str = typer.Option(...,  "-domain",   help="AD domain (e.g. test.local)"),
-        resource:  str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
-        output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
-        user_agent: str = typer.Option(None, "-useragent", help="Override the User-Agent header sent during authentication (Optional)"),
+        tenant:        str = typer.Option(...,  "-t", "--tenant",  help="Tenant ID"),
+        client_id: str = typer.Option(...,  "-c", "--client-id", help="Client ID"),
+        ccache: str = typer.Option(None,  "-a", "--ccache", help="The Kerberos ticket cache file needed for authentication (By Default will extract the $KRB5CCNAME environment variable)"),
+        domain: str = typer.Option(...,  "-d", "--domain",   help="AD domain (e.g. test.local)"),
+        resource:  str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
+        output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console (Optional)"),
+        user_agent: str = typer.Option(None, "-u", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),
 ):
     """Authenticate using Kerberos ticket via Seamless SSO (pass-the-ticket)"""
     # resolve the ccache and assign it to the KRB5CCNAME env variable

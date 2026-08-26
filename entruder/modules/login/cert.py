@@ -19,14 +19,14 @@ from ._shared import login_app, console
 @login_app.command("cert")
 @handle_cli_errors
 def login_cert(
-    tenant:    str = typer.Option(...,  "-tenant",   help="Tenant ID"),
-    client_id: str = typer.Option(...,  "-clientid", help="Client ID"),
-    cert:      str = typer.Option(...,  "-cert",     help="Path to certificate file (.pem/.crt)"),
-    key:       str = typer.Option(...,  "-key",      help="Path to private key file (.pem)"),
-    keypass:   str = typer.Option(None, "-keypass",  help="Passphrase for an encrypted private key (Optional)"),
-    resource:  str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
-    output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
-    user_agent: str = typer.Option(None, "-useragent", help="Override the User-Agent header sent during authentication (Optional)"),
+    tenant:    str = typer.Option(...,  "-t", "--tenant",   help="Tenant ID"),
+    client_id: str = typer.Option(...,  "-c", "--client-id", help="Client ID"),
+    cert:      str = typer.Option(...,  "-e", "--cert",     help="Path to certificate file (.pem/.crt)"),
+    key:       str = typer.Option(...,  "-k", "--key",      help="Path to private key file (.pem)"),
+    keypass:   str = typer.Option(None, "-p", "--key-pass",  help="Passphrase for an encrypted private key (Optional)"),
+    resource:  str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
+    output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console (Optional)"),
+    user_agent: str = typer.Option(None, "-u", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),
 ):
     """
     Authenticate with a Service Principal's client certificate (certificate-based auth)

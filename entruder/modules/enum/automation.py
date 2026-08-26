@@ -79,9 +79,9 @@ def _project_variable(var):
 @enum_app.command("automation-accounts")
 @handle_cli_errors
 def enum_automation_accounts(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate Automation Accounts in a subscription."""
@@ -119,11 +119,11 @@ def enum_automation_accounts(
 @enum_app.command("runbooks")
 @handle_cli_errors
 def enum_runbooks(
-    account: str = typer.Option(..., "-account", help="Automation Account name (see `enum automation-accounts`)"),
-    rg: str = typer.Option(..., "-rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
+    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (see `enum automation-accounts`)"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(),
 ):
     """List runbooks in an Automation Account."""
@@ -162,12 +162,12 @@ def enum_runbooks(
 @enum_app.command("runbook-content")
 @handle_cli_errors
 def enum_runbook_content(
-    runbook: str = typer.Option(..., "-runbook", help="Runbook name (see `enum runbooks`)"),
-    account: str = typer.Option(..., "-account", help="Automation Account name"),
-    rg: str = typer.Option(..., "-rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
+    runbook: str = typer.Option(..., "-r", "--runbook", help="Runbook name (see `enum runbooks`)"),
+    account: str = typer.Option(..., "-a", "--account", help="Automation Account name"),
+    rg: str = typer.Option(..., "-g", "--rg", help="Resource group the account lives in"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(),
 ):
     """Retrieve a runbook's actual script content, which potentially hides credentials"""
@@ -200,11 +200,11 @@ def enum_runbook_content(
 @enum_app.command("automation-variables")
 @handle_cli_errors
 def enum_automation_variables(
-    account: str = typer.Option(..., "-account", help="Automation Account name (see `enum automation-accounts`)"),
-    rg: str = typer.Option(..., "-rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
+    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (see `enum automation-accounts`)"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(),
 ):
     """List variables in an Automation Account."""

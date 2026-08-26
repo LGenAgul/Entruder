@@ -9,7 +9,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, MofNCompleteColum
 _console = Console()
 
 # Progress feedback goes to stderr, not the main console, so it never lands
-# in piped -output json/csv/xml (that's stdout only) and stays visible on
+# in piped --output json/csv/xml (that's stdout only) and stays visible on
 # screen even when stdout is redirected to a file.
 _status_console = Console(stderr=True)
 
@@ -24,9 +24,9 @@ def iter_with_progress(items, description: str, key=None):
     """Wrap an iterable with a transient spinner so loops that make one API
     call per item (checking access on N storage accounts, listing secrets on
     N vaults, fetching config for N web apps) give feedback while they run
-    instead of hanging silently. Not gated by -verbose, unlike vprint, since
+    instead of hanging silently. Not gated by --verbose, unlike vprint, since
     this is progress the user usually wants, not request-level debug detail,
-    but -no-progress (STATE.no_progress) turns it off for anyone who'd rather
+    but --no-progress (STATE.no_progress) turns it off for anyone who'd rather
     not see it, e.g. when capturing a clean terminal recording.
 
     key(item) -> a short label for the item currently being processed

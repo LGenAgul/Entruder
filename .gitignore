@@ -18,3 +18,4 @@ build/
 Thumbs.db
 *.env
 .env
+.claude/

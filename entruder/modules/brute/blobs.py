@@ -68,14 +68,14 @@ def _probe_container(account: str, container: str, timeout: int) -> dict:
 @brute_app.command("blobs")
 @handle_cli_errors
 def brute_blobs(
-    account: List[str] = typer.Option(..., "-account",
+    account: List[str] = typer.Option(..., "-a", "--account",
         help="Storage account to brute-force containers on — repeatable. Accepts either just the "
              "account name or the full <name>.blob.core.windows.net"),
-    container_wordlist: str = typer.Option(None, "-container-wordlist",
+    container_wordlist: str = typer.Option(None, "-c", "--container-wordlist",
         help="Path to a file of container names (one per line) to try, added on top of the built-in "
              "list — e.g. a SecLists-style wordlist, for a proper brute force (Optional)"),
-    threads: int = typer.Option(10, "-threads", help="Concurrent requests (Optional, default: 10)"),
-    timeout: int = typer.Option(10, "-timeout", help="Per-request timeout in seconds (Optional, default: 10)"),
+    threads: int = typer.Option(10, "-t", "--threads", help="Concurrent requests (Optional, default: 10)"),
+    timeout: int = typer.Option(10, "-i", "--timeout", help="Per-request timeout in seconds (Optional, default: 10)"),
     output: OutputFormat = output_option(),
 ):
     """
@@ -84,7 +84,7 @@ def brute_blobs(
     """
     accounts = sorted({a for a in (_normalize_account(a) for a in account) if a})
     if not accounts:
-        console.print("[bold red][-][/] -account didn't normalize to a valid storage account name")
+        console.print("[bold red][-][/] --account didn't normalize to a valid storage account name")
         raise typer.Exit(1)
 
     try:

@@ -17,11 +17,11 @@ from ._shared import login_app, console
 @login_app.command("foci")
 @handle_cli_errors
 def login_foci(
-    tenant:        str = typer.Option(...,  "-tenant",  help="Tenant ID"),
-    refresh_token: str = typer.Option(...,  "-token",   help="Refresh token to test across FOCI family"),
-    resource:      str = typer.Option(None, "-resource", help="Target resource (Optional, default: all planes)"),
-    output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console (Optional)"),
-    user_agent:    str = typer.Option(None, "-useragent", help="Override the User-Agent header sent during authentication (Optional)"),
+    tenant:        str = typer.Option(...,  "-t", "--tenant",  help="Tenant ID"),
+    refresh_token: str = typer.Option(...,  "-o", "--token",   help="Refresh token to test across FOCI family"),
+    resource:      str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
+    output_tokens: bool = typer.Option(False, "-u", "--output", help="Output tokens to console (Optional)"),
+    user_agent:    str = typer.Option(None, "-a", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),
 ):
     """Use the Microsoft Family of Client IDs to acquire a Family Refresh Token (FRT)"""
     tenant =  require_tenant(tenant,console)

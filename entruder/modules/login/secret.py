@@ -17,12 +17,12 @@ from ._shared import login_app, console
 @login_app.command("secret")
 @handle_cli_errors
 def login_secret(
-    tenant: str = typer.Option(..., "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(..., "-clientid", help="Client ID"),
-    client_secret: str = typer.Option(..., "-secret", help="Client Secret"),
-    output_tokens: bool = typer.Option(False, "-output", help="Output tokens to console"),
-    resource: str = typer.Option(None, "-resource", help="Target resource for the token"),
-    user_agent: str = typer.Option(None, "-useragent", help="Override the User-Agent header sent during authentication (Optional)"),
+    tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(..., "-c", "--client-id", help="Client ID"),
+    client_secret: str = typer.Option(..., "-s", "--secret", help="Client Secret"),
+    output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console"),
+    resource: str = typer.Option(None, "-r", "--resource", help="Target resource for the token"),
+    user_agent: str = typer.Option(None, "-u", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),
 ):
     """
     Authenticate with a Service Principal's client credentials, via a client ID and a secret

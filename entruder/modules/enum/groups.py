@@ -17,8 +17,8 @@ from ._shared import enum_app, console, columns, prepare_session
 @enum_app.command("groups")
 @handle_cli_errors
 def enum_groups(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
     ):
     """Enumerate directory groups via Microsoft Graph, using a saved graph session"""

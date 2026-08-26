@@ -12,7 +12,7 @@ SESSION_SCHEMA = {
     "properties": {
         "tenant": {
             "type": "string",
-            # every login command accepts -tenant as a GUID, a domain name
+            # every login command accepts --tenant as a GUID, a domain name
             # (contoso.onmicrosoft.com), or one of AAD's multi-tenant aliases —
             # a GUID-only pattern here rejects perfectly valid sessions
             "pattern": "^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|common|organizations|consumers|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)$"
@@ -80,7 +80,7 @@ def require_tenant_cache(tenant: str, client_id: str, console) -> tuple:
     import typer
 
     resolved_tenant, resolved_client_id = get_tenant_cache(tenant, client_id)
-    missing = [flag for flag, value in (("-tenant", resolved_tenant), ("-clientid", resolved_client_id)) if not value]
+    missing = [flag for flag, value in (("--tenant", resolved_tenant), ("--client-id", resolved_client_id)) if not value]
     if missing:
         console.print(f"[bold red][-][/] Missing {' and '.join(missing)}, and no active tenant information found")
         console.print("[dim] Pass them explicitly, or run a login command first to set an active session[/dim]")
@@ -138,12 +138,12 @@ def require_session(tenant: str, client_id: str, plane: str, console) -> str:
     session = get_session(tenant, client_id)
     if not session:
         console.print(f"[bold red][-][/] No valid session found for {tenant} / {client_id}")
-        console.print(f"[dim] To receive a session run: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
+        console.print(f"[dim] To receive a session run: entruder login <method> --tenant {tenant} --client-id {client_id} ... [/dim]")
         raise typer.Exit(1)
 
     if not validate_json(session):
         console.print(f"[bold red][-][/] Session file corrupted/malformed, or contains incorrect data for {tenant} / {client_id}")
-        console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
+        console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> --tenant {tenant} --client-id {client_id} ... [/dim]")
         raise typer.Exit(1)
 
     plane_missing = not session.get("tokens", {}).get(plane, {}).get("value")
@@ -152,13 +152,13 @@ def require_session(tenant: str, client_id: str, plane: str, console) -> str:
 
     if check_expired(session, plane):
         console.print(f"[bold red][-][/] Session Expired for {tenant} / {client_id} on {plane} plane")
-        console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> -tenant {tenant} -clientid {client_id} ... [/dim]")
+        console.print(f"[dim] Invoke a new Auth Flow via: entruder login <method> --tenant {tenant} --client-id {client_id} ... [/dim]")
         raise typer.Exit(1)
 
     token = session.get("tokens", {}).get(plane, {}).get("value")
     if not token:
         console.print(f"[bold red][-][/] No {plane} token in session")
-        console.print(f"[dim]    Run: entruder login <method> -tenant {tenant} -clientid {client_id} -resource {plane}[/dim]")
+        console.print(f"[dim]    Run: entruder login <method> --tenant {tenant} --client-id {client_id} --resource {plane}[/dim]")
         raise typer.Exit(1)
     return token
 

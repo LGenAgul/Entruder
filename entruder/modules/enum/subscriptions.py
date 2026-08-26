@@ -17,8 +17,8 @@ from ._shared import enum_app, console, columns, prepare_session
 @enum_app.command("subs")
 @handle_cli_errors
 def enum_subscriptions(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate subscriptions associated to this tenant"""
@@ -51,10 +51,10 @@ def enum_subscriptions(
 @enum_app.command("resources")
 @handle_cli_errors
 def enum_resources(
-    tenant: str = typer.Option(None, "-tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-clientid", help="Client ID"),
-    sub: str = typer.Option(None, "-subid", help="Subscription Id"),
-    type: str = typer.Option(None, "-type", help="Resource Type"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    type: str = typer.Option(None, "-y", "--type", help="Resource Type"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate resources within a subscription"""

@@ -245,13 +245,13 @@ def _generate_password(length=20):
 @azsync_app.command("ato")
 @handle_cli_errors
 def azsync_ato(
-    tenant: str = typer.Option(..., "-tenant", help="Tenant ID (or domain) of the target directory"),
-    username: str = typer.Option(..., "-username", help="UPN of the on-prem sync account (e.g. Sync_HOST_xxxx@tenant.onmicrosoft.com)"),
-    password: str = typer.Option(..., "-password", help="Password of the sync account"),
-    ga_id: str = typer.Option(None, "-ga-id", help="Object ID (or UPN) of the target account to take over (Optional, auto-discovers a Global Administrator if omitted)"),
-    new_password: str = typer.Option(None , "-new-password", help="Password to set on the target (Optional, generated if omitted)"),
-    provisioning: bool = typer.Option(False, "-provisioning", help="Reset via the AzureAD Connect sync API (password-hash sync) instead of Azure AD Graph (works against cloud-only Global Admins that AAD Graph blocks)"),
-    client_id: str = typer.Option("1b730954-1685-4b74-9bfd-dac224a7b894", "-clientid", help="Public client ID for the ROPC token (Optional, defaults to Azure AD PowerShell)"),
+    tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID (or domain) of the target directory"),
+    username: str = typer.Option(..., "-u", "--username", help="UPN of the on-prem sync account (e.g. Sync_HOST_xxxx@tenant.onmicrosoft.com)"),
+    password: str = typer.Option(..., "-p", "--password", help="Password of the sync account"),
+    ga_id: str = typer.Option(None, "-g", "--ga-id", help="Object ID (or UPN) of the target account to take over (Optional, auto-discovers a Global Administrator if omitted)"),
+    new_password: str = typer.Option(None , "-n", "--new-password", help="Password to set on the target (Optional, generated if omitted)"),
+    provisioning: bool = typer.Option(False, "-r", "--provisioning", help="Reset via the AzureAD Connect sync API (password-hash sync) instead of Azure AD Graph (works against cloud-only Global Admins that AAD Graph blocks)"),
+    client_id: str = typer.Option("1b730954-1685-4b74-9bfd-dac224a7b894", "-c", "--client-id", help="Public client ID for the ROPC token (Optional, defaults to Azure AD PowerShell)"),
 ):
     """Take over a target account (e.g. a Global Admin) by abusing on-prem sync (MSOL) account credentials"""
     tenant = require_tenant(tenant, console)

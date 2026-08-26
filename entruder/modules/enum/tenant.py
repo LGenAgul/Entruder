@@ -22,7 +22,7 @@ from ._shared import enum_app, console, columns
 @enum_app.command("tenant")
 @handle_cli_errors
 def enum_tenant(
-    domain: str = typer.Option(..., "-domain", help="Domain Name"),
+    domain: str = typer.Option(..., "-d", "--domain", help="Domain Name"),
     output: OutputFormat = output_option(),
 ):
     try:
