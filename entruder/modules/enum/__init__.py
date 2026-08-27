@@ -18,7 +18,6 @@ from . import (
     consents,
     automation,
     au,
-    tenant,
     privileges,
     users,
     groups,

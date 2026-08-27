@@ -1,5 +1,4 @@
 import typer
-from rich.console import Console
 from datetime import datetime, timezone
 from entruder.static import FOCI_CLIENTS, DIRECTORY_ROLES, DIRECTORY_ROLE_TIER_ORDER
 from entruder.utils import (
@@ -13,9 +12,9 @@ from entruder.utils import (
     require_tenant_cache,
 )
 from entruder.columns import Columns
+from entruder.console import CONSOLE as console
 
-analyze_app = typer.Typer(help="Analyze", no_args_is_help=True)
-console = Console()
+analyze_app = typer.Typer(help="Module for analyzing objects", no_args_is_help=True)
 columns = Columns()
 
 

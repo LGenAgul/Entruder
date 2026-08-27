@@ -5,13 +5,11 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, MofNCompleteColumn
 
-# Shared console for diagnostic (verbose) output
-_console = Console()
-
+from entruder.console import CONSOLE as _console
 # Progress feedback goes to stderr, not the main console, so it never lands
 # in piped --output json/csv/xml (that's stdout only) and stays visible on
 # screen even when stdout is redirected to a file.
-_status_console = Console(stderr=True)
+from entruder.console import STDERR_CONSOLE as _status_console
 
 
 def vprint(message: str) -> None:

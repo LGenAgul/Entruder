@@ -1,11 +1,10 @@
 import typer
-from rich.console import Console
 
 from entruder.columns import Columns
+from entruder.console import CONSOLE as console
 from entruder.utils import parse_error
 
-brute_app = typer.Typer(help="Brute-force / guessing commands (credentials, User-Agents, resource names)", no_args_is_help=True)
-console = Console()
+brute_app = typer.Typer(help="Brute-force and guessing commands for discovering directory objects and users", no_args_is_help=True)
 columns = Columns()
 
 

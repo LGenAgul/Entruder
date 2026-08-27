@@ -1,7 +1,7 @@
 import typer
-from rich.console import Console
 
 from entruder.columns import Columns
+from entruder.console import CONSOLE as console
 from entruder.globals import (
     resource_group_from_id,
     prepare_session,
@@ -12,6 +12,5 @@ from entruder.globals import (
 )
 
 
-enum_app = typer.Typer(help="Enumeration", no_args_is_help=True)
-console = Console()
+enum_app = typer.Typer(help="Enumeration Module for discovering directory objects and users", no_args_is_help=True)
 columns = Columns()

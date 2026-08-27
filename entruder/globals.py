@@ -11,9 +11,8 @@ import local here avoids depending on module import order.
 
 import re
 import typer
-from rich.console import Console
 
-_console = Console()
+from entruder.console import CONSOLE as _console
 
 _GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
 

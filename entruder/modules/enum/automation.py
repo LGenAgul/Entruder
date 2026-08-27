@@ -159,44 +159,6 @@ def enum_runbooks(
         console.print(f"[bold]{len(runbooks)}[/] runbooks total")
 
 
-@enum_app.command("runbook-content")
-@handle_cli_errors
-def enum_runbook_content(
-    runbook: str = typer.Option(..., "-r", "--runbook", help="Runbook name (see `enum runbooks`)"),
-    account: str = typer.Option(..., "-a", "--account", help="Automation Account name"),
-    rg: str = typer.Option(..., "-g", "--rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
-    output: OutputFormat = output_option(),
-):
-    """Retrieve a runbook's actual script content, which potentially hides credentials"""
-    if not sub:
-        console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
-        raise typer.Exit(1)
-
-    tenant, headers = prepare_session(tenant, client_id, "management")
-
-    url = (f"https://management.azure.com/subscriptions/{sub}/resourceGroups/{rg}"
-           f"/providers/Microsoft.Automation/automationAccounts/{account}/runbooks/{runbook}/content")
-    params = {"api-version": API_VERSIONS["automation"]}
-
-    vprint(f"GET {url}")
-    response = httpx.get(url, headers=headers, params=params, timeout=HTTP_TIMEOUT)
-    vprint(f"  -> HTTP {response.status_code} ({len(response.content)} bytes)")
-    if response.status_code != 200:
-        try:
-            error = response.json().get("error", {})
-            message = error.get("message", "Unknown error")
-        except Exception:
-            message = response.text[:200]
-        console.print(f"[bold red][-][/] Management request failed: HTTP {response.status_code} {parse_error(message)}")
-        raise typer.Exit(1)
-
-    row = {"name": runbook, "content": response.text}
-    render(console, f"{account}/{runbook}", columns.RUNBOOK_CONTENT, row, output=output, xml_item_tag="runbook")
-
-
 @enum_app.command("automation-variables")
 @handle_cli_errors
 def enum_automation_variables(

@@ -8,14 +8,12 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 import msal
 import typer
-from rich.console import Console
 
 from entruder.static import RESOURCE_SHORTCUTS
+from entruder.console import CONSOLE as console
 from .http import request_json
 from .logging import vprint
 from .parser import csv_to_list, parse_error, parse_token, resolve_plane_from_resource
-
-console = Console()
 
 
 def acquire_for_resources(resources: list, acquire, console, output_tokens=False, label=None) -> dict:

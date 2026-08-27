@@ -6,6 +6,23 @@ class State:
 
 STATE = State()
 
+# Typer renders the app's `help=` text through Click's help formatter, which
+# rewraps a plain paragraph onto one line — a leading "\b" is Click's signal
+# to leave the paragraph's line breaks alone, which is what keeps the ASCII
+# art intact instead of getting flattened into a single reflowed line.
+BANNER = "\b" + r"""
+ Made in Georgia
+ ███████╗███╗   ██╗████████╗██████╗ ██╗   ██╗██████╗ ███████╗██████╗
+ ██╔════╝████╗  ██║╚══██╔══╝██╔══██╗██║   ██║██╔══██╗██╔════╝██╔══██╗
+ █████╗  ██╔██╗ ██║   ██║   ██████╔╝██║   ██║██║  ██║█████╗  ██████╔╝
+ ██╔══╝  ██║╚██╗██║   ██║   ██╔══██╗██║   ██║██║  ██║██╔══╝  ██╔══██╗
+ ███████╗██║ ╚████║   ██║   ██║  ██║╚██████╔╝██████╔╝███████╗██║  ██║
+ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
+ Слава Україні
+"""
+
+
+
 PLANES = {
     "management": "https://management.azure.com/.default",
     "graph":       "https://graph.microsoft.com/.default",

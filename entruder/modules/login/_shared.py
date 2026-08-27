@@ -1,5 +1,5 @@
 import typer
-from rich.console import Console
 
-login_app = typer.Typer(help="Login", no_args_is_help=True)
-console = Console()
+from entruder.console import CONSOLE as console
+
+login_app = typer.Typer(help="Various Login methods for acquiring access tokens", no_args_is_help=True)

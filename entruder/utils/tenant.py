@@ -46,6 +46,6 @@ def require_tenant(tenant: str, console):
      resolved_tenant = resolve_tenant_from_domain(tenant)
      if not resolved_tenant:
         console.print(f"[bold red][-][/] Could not resolve {tenant} to a known tenant")
-        console.print(f"[bold][-][/] To resolve a domain to a tenant and store it in cache do: entruder enum tenant --domain <DOMAIN>")
+        console.print(f"[bold][-][/] To resolve a domain to a tenant and store it in cache do: entruder get tenant --domain <DOMAIN>")
         raise typer.Exit(1)
      return resolved_tenant

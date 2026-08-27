@@ -257,6 +257,29 @@ class Columns:
         ("Etag",          "Etag"),
     ]
 
+    BLOB_CONTENT = [
+        ("Name",         "name"),
+        ("Container",    "container"),
+        ("Account",      "account"),
+        ("Content Type", "content_type"),
+        ("Size (bytes)", "size"),
+        ("Content",      "content"),
+    ]
+
+    MAIL = [
+        ("Subject",     "subject"),
+        ("From",        "from"),
+        ("To",          "to", format_string_list),
+        ("Cc",          "cc", format_string_list),
+        ("Received",    "received"),
+        ("Sent",        "sent"),
+        ("Importance",  "importance"),
+        ("Read",        "is_read"),
+        ("Body Type",   "body_type"),
+        ("Body",        "body"),
+        ("Attachments", "attachments", format_string_list),
+    ]
+
     # roles/administrative_units/owned/app_role_assignments come from /me's
     # transitive membership + ownership; azure_role_assignments is the ARM
     # roleAssignments properties blob for the same principal on --sub-id.

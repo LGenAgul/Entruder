@@ -1,7 +1,7 @@
 import typer
-from rich.console import Console
 
 from entruder.columns import Columns
+from entruder.console import CONSOLE as console
 from entruder.globals import (
     resource_group_from_id,
     prepare_session,
@@ -16,6 +16,5 @@ from entruder.globals import (
 )
 
 
-set_app = typer.Typer(help="Enumeration", no_args_is_help=True)
-console = Console()
+set_app = typer.Typer(help="Modify or add an objects/users attributes", no_args_is_help=True)
 columns = Columns()

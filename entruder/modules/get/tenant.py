@@ -16,15 +16,16 @@ from entruder.utils import (
     save_domain_mapping,
 )
 
-from ._shared import enum_app, console, columns
+from ._shared import get_app, console, columns
 
 
-@enum_app.command("tenant")
+@get_app.command("tenant")
 @handle_cli_errors
-def enum_tenant(
+def get_tenant(
     domain: str = typer.Option(..., "-d", "--domain", help="Domain Name"),
     output: OutputFormat = output_option(),
 ):
+    """Fetch a single tenant's identity/federation info by domain"""
     try:
         openid_json = request_json(
             "GET",

@@ -22,7 +22,7 @@ def enum_au(
         help="Also enumerate scoped role assignments (restricted management AU delegation) on each administrative unit"),
     output: OutputFormat = output_option(),
 ):
-    """Enumerate Entra administrative units tenant-wide — delegation boundaries used to scope directory role assignments to a subset of users/groups/devices."""
+    """Enumerate Entra administrative units tenant-wide, delegation boundaries used to scope directory role assignments to a subset of users/groups/devices."""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph_url_base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 
