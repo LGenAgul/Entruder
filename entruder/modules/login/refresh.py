@@ -8,6 +8,7 @@ from entruder.utils import (
     save_session,
     vprint,
     require_tenant,
+    resolve_client_id,
     initialize_tenant_cache,
 )
 
@@ -28,6 +29,7 @@ def login_refresh(
     Acquire new access tokens using a refresh token.
     """
     tenant =  require_tenant(tenant,console)
+    client_id = resolve_client_id(client_id)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
     headers = {"User-Agent": user_agent} if user_agent else None
     # AAD may rotate the refresh token per request; keep a mutable holder so

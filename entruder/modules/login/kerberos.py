@@ -9,6 +9,7 @@ from entruder.utils import (
     request_json,
     save_session,
     require_tenant,
+    resolve_client_id,
     initialize_tenant_cache,
 )
 
@@ -29,6 +30,7 @@ def login_kerberos(
     """Authenticate using Kerberos ticket via Seamless SSO (pass-the-ticket)"""
     # resolve the ccache and assign it to the KRB5CCNAME env variable
     tenant =  require_tenant(tenant,console)
+    client_id = resolve_client_id(client_id)
     if ccache:
         ccache = os.path.realpath(ccache)
         if not os.path.exists(ccache):

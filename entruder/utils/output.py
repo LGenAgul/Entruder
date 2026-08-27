@@ -433,6 +433,18 @@ def format_bytes(value) -> str:
     return "" if value is None else str(value)
 
 
+def format_file_size(value) -> str:
+    """Compact cell for a byte-count integer (e.g. driveItem.size): render as
+    a human-readable B/KB/MB/GB size instead of a raw byte count."""
+    if not isinstance(value, (int, float)):
+        return "" if value is None else str(value)
+    size = float(value)
+    for unit in ("B", "KB", "MB", "GB"):
+        if size < 1024 or unit == "GB":
+            return f"{size:.0f} {unit}" if unit == "B" else f"{size:.2f} {unit}"
+        size /= 1024
+
+
 def _cell(value) -> str:
     """Flatten any value (scalar, dict, or list) into a single readable string
     for table/csv cells."""

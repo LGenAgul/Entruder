@@ -11,4 +11,5 @@ from . import (
     mfasweep,
     uasweep,
     blobs,
+    users,
 )

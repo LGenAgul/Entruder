@@ -30,6 +30,7 @@ PLANES = {
     "keyvault":    "https://vault.azure.net/.default",  # Key Vault's resource id is vault.azure.net, not .com
 }
 
+
 RESOURCE_SHORTCUTS = {
     "graph":      "https://graph.microsoft.com/",
     "management": "https://management.azure.com/",
@@ -143,8 +144,124 @@ FOCI_CLIENTS = {
     "teams":            "1fec8e78-bce4-4aaf-ab1b-5451cc387264",
     "office":           "d3590ed6-52b3-4102-aeff-aad2292ab01c",
     "onedrive":         "ab9b8c07-8f02-4f72-87fa-80105867a763",
-    "power_automate":   "27922004-5251-4030-b22d-91ecd9a37ea4",
+    # was mislabeled "power_automate" — 27922004-... is Outlook Mobile's client id
+    "outlook_mobile":   "27922004-5251-4030-b22d-91ecd9a37ea4",
     "microsoft_edge":   "ecd6b820-32c2-49b6-98a6-444530e5a77a",
+}
+
+# Client ID -> friendly app name for well-known Microsoft first-party public
+# clients (source: GraphRunner's Invoke-BruteClientIDAccess $AppInfo table).
+# Broader than FOCI_CLIENTS (which is keyed by name for the small subset that
+# are actually redeemable via `login foci`) — this is for identifying/labeling
+# an arbitrary client_id/appid seen in a token or session, the same way
+# DIRECTORY_ROLES resolves a wid to a name in `analyze token`.
+KNOWN_CLIENT_IDS = {
+    "00b41c95-dab0-4487-9791-b9d2c32c80f2": "Office 365 Management",
+    "04b07795-8ddb-461a-bbee-02f9e1bf7b46": "Microsoft Azure CLI",
+    "0ec893e0-5785-4de6-99da-4ed124e5296c": "Office UWP PWA",
+    "18fbca16-2224-45f6-85b0-f7bf2b39b3f3": "Microsoft Docs",
+    "1950a258-227b-4e31-a9cf-717495945fc2": "Microsoft Azure PowerShell",
+    "1b3c667f-cde3-4090-b60b-3d2abd0117f0": "Windows Spotlight",
+    "1b730954-1685-4b74-9bfd-dac224a7b894": "Azure Active Directory PowerShell",
+    "1fec8e78-bce4-4aaf-ab1b-5451cc387264": "Microsoft Teams",
+    "22098786-6e16-43cc-a27d-191a01a1e3b5": "Microsoft To-Do client",
+    "268761a2-03f3-40df-8a8b-c3db24145b6b": "Universal Store Native Client",
+    "26a7ee05-5602-4d76-a7ba-eae8b7b67941": "Windows Search",
+    "27922004-5251-4030-b22d-91ecd9a37ea4": "Outlook Mobile",
+    "29d9ed98-a469-4536-ade2-f981bc1d605e": "Microsoft Authentication Broker",
+    "2d7f3606-b07d-41d1-b9d2-0d0c9296a6e8": "Microsoft Bing Search for Microsoft Edge",
+    "4813382a-8fa7-425e-ab75-3b753aab3abb": "Microsoft Authenticator App",
+    "4e291c71-d680-4d0e-9640-0a3358e31177": "PowerApps",
+    "57336123-6e14-4acc-8dcf-287b6088aa28": "Microsoft Whiteboard Client",
+    "57fcbcfa-7cee-4eb1-8b25-12d2030b4ee0": "Microsoft Flow Mobile PROD-GCCH-CN",
+    "60c8bde5-3167-4f92-8fdb-059f6176dc0f": "Enterprise Roaming and Backup",
+    "66375f6b-983f-4c2c-9701-d680650f588f": "Microsoft Planner",
+    "844cca35-0656-46ce-b636-13f48b0eecbd": "Microsoft Stream Mobile Native",
+    "872cd9fa-d31f-45e0-9eab-6e460a02d1f1": "Visual Studio - Legacy",
+    "87749df4-7ccf-48f8-aa87-704bad0e0e16": "Microsoft Teams - Device Admin Agent",
+    "90f610bf-206d-4950-b61d-37fa6fd1b224": "Aadrm Admin PowerShell",
+    "9ba1a5c7-f17a-4de9-a1f1-6178c8d51223": "Microsoft Intune Company Portal",
+    "9bc3ab49-b65d-410a-85ad-de819febfddc": "Microsoft SharePoint Online Management Shell",
+    "a0c73c16-a7e3-4564-9a95-2bdf47383716": "Microsoft Exchange Online Remote PowerShell",
+    "a40d7d7d-59aa-447e-a655-679a4107e548": "Accounts Control UI",
+    "a569458c-7f2b-45cb-bab9-b7dee514d112": "Yammer iPhone",
+    "ab9b8c07-8f02-4f72-87fa-80105867a763": "OneDrive Sync Engine",
+    "af124e86-4e96-495a-b70a-90f90ab96707": "OneDrive iOS App",
+    "b26aadf8-566f-4478-926f-589f601d9c74": "OneDrive",
+    "b90d5b8f-5503-4153-b545-b31cecfaece2": "AADJ CSP",
+    "c0d2a505-13b8-4ae0-aa9e-cddd5eab0b12": "Microsoft Power BI",
+    "c58637bb-e2e1-4312-8a00-04b5ffcd3403": "SharePoint Online Client Extensibility",
+    "cb1056e2-e479-49de-ae31-7812af012ed8": "Microsoft Azure Active Directory Connect",
+    "cf36b471-5b44-428c-9ce7-313bf84528de": "Microsoft Bing Search",
+    "d326c1ce-6cc6-4de2-bebc-4591e5e13ef0": "SharePoint",
+    "d3590ed6-52b3-4102-aeff-aad2292ab01c": "Microsoft Office",
+    "e9b154d0-7658-433b-bb25-6b8e0a8a7c59": "Outlook Lite",
+    "e9c51622-460d-4d3d-952d-966a5b1da34c": "Microsoft Edge",
+    "eb539595-3fe1-474e-9c1d-feb3625d1be5": "Microsoft Tunnel",
+    "ecd6b820-32c2-49b6-98a6-444530e5a77a": "Microsoft Edge",
+    "f05ff7c9-f75a-4acd-a3b5-f4b6a870245d": "SharePoint Android",
+    "f448d7e5-e313-4f90-a3eb-5dbb3277e4b3": "Media Recording for Dynamics 365 Sales",
+    "f44b1140-bc5e-48c6-8dc0-5cf5a53c0e34": "Microsoft Edge",
+    "fb78d390-0c51-40cd-8e17-fdbfab77341b": "Microsoft Exchange REST API Based PowerShell",
+    "fc0f3af4-6835-4174-b806-f7db311fd2f3": "Microsoft Intune Windows Agent",
+}
+
+# Short name -> client id, resolved by `resolve_client_id()` so any --client-id
+# option accepts these instead of the raw GUID (e.g. --client-id officemanagement).
+# Covers the rest of KNOWN_CLIENT_IDS that FOCI_CLIENTS doesn't already name;
+# a few entries here (azurecli, azurepowershell, outlookmobile, edge,
+# microsoftoffice) are deliberate no-underscore/alternate-spelling duplicates
+# of a FOCI_CLIENTS entry pointing at the same id, kept as convenience aliases.
+# Three ids all display as bare "Microsoft Edge" in Microsoft's own naming with
+# no further distinction available — edge is the one already known via
+# FOCI_CLIENTS as microsoft_edge, edge2/edge3 are the other two.
+CLIENT_ID_ALIASES = {
+    "officemanagement":        "00b41c95-dab0-4487-9791-b9d2c32c80f2",
+    "azurecli":                "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    "uwppwa":                  "0ec893e0-5785-4de6-99da-4ed124e5296c",
+    "msdocs":                  "18fbca16-2224-45f6-85b0-f7bf2b39b3f3",
+    "azurepowershell":         "1950a258-227b-4e31-a9cf-717495945fc2",
+    "spotlight":               "1b3c667f-cde3-4090-b60b-3d2abd0117f0",
+    "aadpowershell":           "1b730954-1685-4b74-9bfd-dac224a7b894",
+    "todo":                    "22098786-6e16-43cc-a27d-191a01a1e3b5",
+    "universalstore":          "268761a2-03f3-40df-8a8b-c3db24145b6b",
+    "windowssearch":           "26a7ee05-5602-4d76-a7ba-eae8b7b67941",
+    "outlookmobile":           "27922004-5251-4030-b22d-91ecd9a37ea4",
+    "authenticationbroker":    "29d9ed98-a469-4536-ade2-f981bc1d605e",
+    "bingsearchedge":          "2d7f3606-b07d-41d1-b9d2-0d0c9296a6e8",
+    "authenticator":           "4813382a-8fa7-425e-ab75-3b753aab3abb",
+    "powerapps":               "4e291c71-d680-4d0e-9640-0a3358e31177",
+    "whiteboard":              "57336123-6e14-4acc-8dcf-287b6088aa28",
+    "flowmobile":              "57fcbcfa-7cee-4eb1-8b25-12d2030b4ee0",
+    "roamingbackup":           "60c8bde5-3167-4f92-8fdb-059f6176dc0f",
+    "planner":                 "66375f6b-983f-4c2c-9701-d680650f588f",
+    "streammobile":            "844cca35-0656-46ce-b636-13f48b0eecbd",
+    "visualstudio":            "872cd9fa-d31f-45e0-9eab-6e460a02d1f1",
+    "teamsdeviceadmin":        "87749df4-7ccf-48f8-aa87-704bad0e0e16",
+    "aadrmpowershell":         "90f610bf-206d-4950-b61d-37fa6fd1b224",
+    "intuneportal":            "9ba1a5c7-f17a-4de9-a1f1-6178c8d51223",
+    "spomanagementshell":      "9bc3ab49-b65d-410a-85ad-de819febfddc",
+    "exchangeonlinepowershell": "a0c73c16-a7e3-4564-9a95-2bdf47383716",
+    "accountscontrolui":       "a40d7d7d-59aa-447e-a655-679a4107e548",
+    "yammeriphone":            "a569458c-7f2b-45cb-bab9-b7dee514d112",
+    "onedriveios":             "af124e86-4e96-495a-b70a-90f90ab96707",
+    "onedriveclient":          "b26aadf8-566f-4478-926f-589f601d9c74",
+    "aadjcsp":                 "b90d5b8f-5503-4153-b545-b31cecfaece2",
+    "powerbi":                 "c0d2a505-13b8-4ae0-aa9e-cddd5eab0b12",
+    "spoclientext":            "c58637bb-e2e1-4312-8a00-04b5ffcd3403",
+    "aadconnect":              "cb1056e2-e479-49de-ae31-7812af012ed8",
+    "bingsearch":              "cf36b471-5b44-428c-9ce7-313bf84528de",
+    "sharepoint":              "d326c1ce-6cc6-4de2-bebc-4591e5e13ef0",
+    "microsoftoffice":         "d3590ed6-52b3-4102-aeff-aad2292ab01c",
+    "outlooklite":             "e9b154d0-7658-433b-bb25-6b8e0a8a7c59",
+    "edge2":                   "e9c51622-460d-4d3d-952d-966a5b1da34c",
+    "tunnel":                  "eb539595-3fe1-474e-9c1d-feb3625d1be5",
+    "edge":                    "ecd6b820-32c2-49b6-98a6-444530e5a77a",
+    "sharepointandroid":       "f05ff7c9-f75a-4acd-a3b5-f4b6a870245d",
+    "dynamicsmediarecording":  "f448d7e5-e313-4f90-a3eb-5dbb3277e4b3",
+    "edge3":                   "f44b1140-bc5e-48c6-8dc0-5cf5a53c0e34",
+    "exchangerestpowershell":  "fb78d390-0c51-40cd-8e17-fdbfab77341b",
+    "intuneagent":             "fc0f3af4-6835-4174-b806-f7db311fd2f3",
 }
 
 

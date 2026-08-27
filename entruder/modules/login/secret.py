@@ -6,6 +6,7 @@ from entruder.utils import (
     acquire_for_resources,
     build_msal_http_client,
     handle_cli_errors,
+    resolve_client_id,
     save_session,
     vprint,
     initialize_tenant_cache,
@@ -27,6 +28,7 @@ def login_secret(
     """
     Authenticate with a Service Principal's client credentials, via a client ID and a secret
     """
+    client_id = resolve_client_id(client_id)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
 
     # initialize the MSAL confidential client application auth flow

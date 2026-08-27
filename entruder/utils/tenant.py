@@ -1,6 +1,32 @@
 import json
 import re
 
+from rich.console import Console
+
+_console = Console()
+_GUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
+
+
+def resolve_client_id(client_id: str) -> str:
+    """Resolves a friendly client name (e.g. "office", "officemanagement") to
+    its GUID via FOCI_CLIENTS / CLIENT_ID_ALIASES, so `-c office` works the
+    same as pasting the raw client_id. Already-a-GUID input is returned
+    unchanged and never looked up. See `entruder.py info clients` for the
+    full list of recognized names."""
+    if not client_id or _GUID_RE.match(client_id):
+        return client_id
+
+    from entruder.static import FOCI_CLIENTS, CLIENT_ID_ALIASES
+    key = client_id.lower()
+    resolved = FOCI_CLIENTS.get(key) or CLIENT_ID_ALIASES.get(key)
+    if resolved:
+        return resolved
+
+    import typer
+    _console.print(f"[bold red][-][/] Unknown client name '{client_id}'")
+    _console.print("[dim] Pass a GUID, or run `entruder.py info clients` to see recognized names[/dim]")
+    raise typer.Exit(1)
+
 
 def save_domain_mapping(domain: str, tenant: str) -> None:
     from entruder.static import DOMAINS_FILE, CACHE_DIR

@@ -6,6 +6,7 @@ from entruder.utils import (
     handle_cli_errors,
     parse_token,
     resolve_plane_from_resource,
+    resolve_client_id,
     save_session,
     initialize_tenant_cache,
 )
@@ -28,6 +29,7 @@ def login_device(
     """
     Authenticate via device code flow. Default flow is v1, with --v2 for scope-based flow
     """
+    client_id = resolve_client_id(client_id)
     tokens = {}
     if v2:
         plane = "graph"

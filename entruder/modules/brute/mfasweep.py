@@ -7,6 +7,7 @@ from entruder.utils import (
     request_json,
     vprint,
     require_tenant,
+    resolve_client_id,
     save_session,
 )
 
@@ -28,6 +29,7 @@ def login_mfasweep(
     Authenticates against numerous planes to check for a lack of MFA enforcment (Shoutouts to https://github.com/absolomb/FindMeAccess)
     """
     tenant = require_tenant(tenant, console)
+    client_id = resolve_client_id(client_id)
 
     resources = {resource: MFA_SWEEP_RESOURCES.get(resource, resource)} if resource else MFA_SWEEP_RESOURCES
     clients = {"custom": client_id} if client_id else FOCI_CLIENTS

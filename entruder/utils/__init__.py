@@ -23,6 +23,7 @@ from .parser import (
 from .tenant import (
     require_tenant,
     save_domain_mapping,
+    resolve_client_id,
 )
 from .session import (
     save_session,
@@ -49,5 +50,6 @@ from .output import (render
                      , format_dict_summary
                      , format_brute_containers
                      , format_bytes
+                     , format_file_size
                      ,
                      output_option)

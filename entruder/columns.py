@@ -16,6 +16,7 @@ from entruder.utils import (
     format_dict_summary,
     format_brute_containers,
     format_bytes,
+    format_file_size,
     )
 
 
@@ -91,6 +92,12 @@ class Columns:
         ("Tags",                 "tags"),
     ]
 
+    # Populated from the Microsoft Search API (entityTypes: drive), not the
+    # /sites endpoint, so only siteId/webUrl are available — see modules/sharepoint/sites.py.
+    SHAREPOINT_SITES = [
+        ("Site ID",  "siteId"),
+        ("Web URL",  "webUrl"),
+    ]
 
 
     USERINFO = [
@@ -396,6 +403,12 @@ class Columns:
         ("Containers", "containers", format_brute_containers),
     ]
 
+    # produced by `brute users` — one row per candidate confirmed to exist.
+    BRUTE_USERS = [
+        ("Username",  "username"),
+        ("Federated", "federated"),
+    ]
+
     ROLE = [
         ("Role Name",       "roleName"),
         ("Principal",       "principalName"),
@@ -440,4 +453,19 @@ class Columns:
         ("Token Version",         "token_version"),
         ("Signing Alg",           "signing_alg"),
         ("Key Id",                "key_id"),
+    ]
+
+    CLIENT_IDS = [
+        ("Client ID",  "client_id"),
+        ("App Name",   "app_name"),
+        ("Resolve As", "resolve_as"),
+    ]
+
+    SEARCH_FILES = [
+        ("File Name",     "file_name"),
+        ("Size",          "size", format_file_size),
+        ("Location",      "location"),
+        ("Drive Item ID", "drive_item_id"),
+        ("Preview",       "preview"),
+        ("Last Modified", "last_modified"),
     ]

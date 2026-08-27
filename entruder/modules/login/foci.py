@@ -9,6 +9,8 @@ from entruder.utils import (
     vprint,
     require_tenant,
     initialize_tenant_cache,
+    get_tenant_cache,
+    get_session,
 )
 
 from ._shared import login_app, console
@@ -17,21 +19,34 @@ from ._shared import login_app, console
 @login_app.command("foci")
 @handle_cli_errors
 def login_foci(
-    tenant:        str = typer.Option(...,  "-t", "--tenant",  help="Tenant ID"),
-    refresh_token: str = typer.Option(...,  "-o", "--token",   help="Refresh token to test across FOCI family"),
+    tenant:        str = typer.Option(None,  "-t", "--tenant",  help="Tenant ID"),
+    refresh_token: str = typer.Option(None,  "-o", "--token",   help="Refresh token to test across FOCI family (defaults to the active session's saved refresh token)"),
     resource:      str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
     output_tokens: bool = typer.Option(False, "-u", "--output", help="Output tokens to console (Optional)"),
     user_agent:    str = typer.Option(None, "-a", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),
 ):
     """Use the Microsoft Family of Client IDs to acquire a Family Refresh Token (FRT)"""
+    if refresh_token is None:
+        session_tenant, session_client_id = get_tenant_cache(tenant, None)
+        session = get_session(session_tenant, session_client_id) if session_tenant and session_client_id else {}
+        refresh_token = session.get("refresh_token")
+        if not refresh_token:
+            console.print("[bold red][-][/] No --token provided and no active session with a saved refresh token was found")
+            console.print("[dim] Pass --token explicitly, or run a login command first to set an active session[/dim]")
+            raise typer.Exit(1)
+        tenant = tenant or session_tenant
+        console.print(f"[dim][*] Using refresh token from active session ({session_tenant} / {session_client_id})[/dim]")
+
     tenant =  require_tenant(tenant,console)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
     headers = {"User-Agent": user_agent} if user_agent else None
     family = {}
+    # AAD rotates the RT on every redemption, invalidating whatever was passed
+    # in — chain the newest one across every client/plane, not just within one
+    # client's own loop, or every client after the first fails with a stale RT.
+    rt_state = {"token": refresh_token}
 
     for name, client_id in FOCI_CLIENTS.items():
-        # AAD may rotate the RT per redemption; chain the newest one within this client
-        rt_state = {"token": refresh_token}
 
         def acquire(plane, res, name=name, client_id=client_id):
             resource_url = RESOURCE_SHORTCUTS.get(res, res)

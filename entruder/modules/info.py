@@ -1,6 +1,6 @@
 import typer
 from datetime import datetime, timezone
-from entruder.static import FOCI_CLIENTS, DIRECTORY_ROLES, DIRECTORY_ROLE_TIER_ORDER
+from entruder.static import FOCI_CLIENTS, KNOWN_CLIENT_IDS, CLIENT_ID_ALIASES, DIRECTORY_ROLES, DIRECTORY_ROLE_TIER_ORDER
 from entruder.utils import (
     decode_jwt,
     decode_jwt_header,
@@ -14,7 +14,7 @@ from entruder.utils import (
 from entruder.columns import Columns
 from entruder.console import CONSOLE as console
 
-analyze_app = typer.Typer(help="Module for analyzing objects", no_args_is_help=True)
+info_app = typer.Typer(help="Local, offline lookups — token decoding and well-known ID maps", no_args_is_help=True)
 columns = Columns()
 
 
@@ -75,7 +75,10 @@ def _analyze_claims(token: str) -> dict:
         "name":              claims.get("name"),
         "object_id":         claims.get("oid"),
         "app_id":            app_id,
-        "app_display_name":  claims.get("app_displayname"),
+        # app_displayname isn't always issued (depends on optional-claims config,
+        # token version, etc.) — fall back to the well-known client id map, same
+        # pattern as _directory_roles() resolving a wid via DIRECTORY_ROLES.
+        "app_display_name":  claims.get("app_displayname") or KNOWN_CLIENT_IDS.get(app_id),
         "tenant_id":         claims.get("tid"),
         "audience":          claims.get("aud"),
         "issuer":            claims.get("iss"),
@@ -98,9 +101,9 @@ def _analyze_claims(token: str) -> dict:
     }
 
 
-@analyze_app.command("token")
+@info_app.command("token")
 @handle_cli_errors
-def analyze_token(
+def info_token(
     token: str = typer.Option(None, "-k", "--token",
         help="Raw JWT to analyze directly (e.g. a token captured out-of-band). "
              "Skips the session cache entirely — no auth needed for this, it's a local decode."),
@@ -149,3 +152,26 @@ def analyze_token(
 
     render(console, f"Token analysis for {resolved_tenant} / {resolved_client_id}", columns.TOKEN,
            results, output=output, xml_root_tag="tokens", xml_item_tag="token")
+
+
+@info_app.command("clients")
+@handle_cli_errors
+def info_clients(
+    output: OutputFormat = output_option(),
+):
+    """List well-known Microsoft first-party client IDs this tool recognizes (KNOWN_CLIENT_IDS).
+    Entries with a value in "Resolve As" can be passed to any --client-id option by that name
+    instead of the raw GUID (e.g. --client-id office)."""
+    aliases_by_id = {}
+    for name, cid in {**CLIENT_ID_ALIASES, **FOCI_CLIENTS}.items():
+        aliases_by_id.setdefault(cid, []).append(name)
+
+    records = [
+        {"client_id": cid, "app_name": name, "resolve_as": ", ".join(sorted(aliases_by_id.get(cid, [])))}
+        for cid, name in sorted(KNOWN_CLIENT_IDS.items(), key=lambda kv: kv[1])
+    ]
+
+    render(console, "Known Client IDs", columns.CLIENT_IDS, records, output=output,
+           xml_root_tag="clients", xml_item_tag="client")
+    if output == OutputFormat.table:
+        console.print(f"[bold]{len(records)}[/] known client IDs, {len(aliases_by_id)} resolvable via --client-id shortcut")

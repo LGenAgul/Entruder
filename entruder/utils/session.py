@@ -2,6 +2,7 @@
 from .logging import vprint
 from .auth import refresh_access_token
 from .parser import parse_token, parse_error
+from .tenant import resolve_client_id
 from entruder.static import SESSIONS_DIR, EXPIRY_BUFFER, ACTIVE_FILE, RESOURCE_SHORTCUTS
 import json
 import time
@@ -63,6 +64,7 @@ def get_tenant_cache(tenant: str = None, client_id: str = None) -> tuple:
     returns a safely-unpackable 2-tuple; unresolved values come back as None
     rather than the whole call returning a bare None.
     """
+    client_id = resolve_client_id(client_id)
     cached_tenant, cached_client_id = None, None
     if not (tenant and client_id) and ACTIVE_FILE.exists():
         body = json.loads(ACTIVE_FILE.read_text())

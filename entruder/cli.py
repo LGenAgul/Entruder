@@ -8,11 +8,12 @@ from entruder.console import CONSOLE, set_color
 from entruder.modules.enum import enum_app
 from entruder.modules.login import login_app
 from entruder.modules.brute import brute_app
-from entruder.modules.analyze import analyze_app
+from entruder.modules.info import info_app
 from entruder.modules.exploit import exploit_app
 from entruder.modules.azsync import azsync_app
 from entruder.modules.set import set_app
 from entruder.modules.get import get_app
+from entruder.modules.sharepoint import sharepoint_app
 from entruder.static import CACHE_DIR,SESSIONS_DIR,STATE
 
 import typer.core as tc
@@ -72,11 +73,12 @@ def main(
 app.add_typer(enum_app,name="enum")
 app.add_typer(login_app,name="login")
 app.add_typer(brute_app,name="brute")
-app.add_typer(analyze_app,name="analyze")
+app.add_typer(info_app,name="info")
 app.add_typer(exploit_app,name="exploit")
 app.add_typer(azsync_app,name="azsync")
 app.add_typer(set_app,name="set")
 app.add_typer(get_app,name="get")
+app.add_typer(sharepoint_app,name="sharepoint")
 
 # initializing the cache directory
 CACHE_DIR.mkdir(mode=0o700, exist_ok=True)

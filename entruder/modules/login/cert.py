@@ -10,6 +10,7 @@ from entruder.utils import (
     save_session,
     vprint,
     require_tenant,
+    resolve_client_id,
     initialize_tenant_cache,
 )
 
@@ -32,6 +33,7 @@ def login_cert(
     Authenticate with a Service Principal's client certificate (certificate-based auth)
     """
     tenant =  require_tenant(tenant,console)
+    client_id = resolve_client_id(client_id)
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
 
     # certificate credentials swap in for a secret; everything else mirrors `login secret`
