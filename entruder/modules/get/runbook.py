@@ -17,9 +17,9 @@ from ._shared import get_app, console, columns, prepare_session
 @get_app.command("runbook-content")
 @handle_cli_errors
 def get_runbook_content(
-    runbook: str = typer.Option(..., "-r", "--runbook", help="Runbook name (see `enum runbooks`)"),
+    runbook: str = typer.Option(..., "-b", "--runbook", help="Runbook name (see `enum runbooks`)"),
     account: str = typer.Option(..., "-a", "--account", help="Automation Account name"),
-    rg: str = typer.Option(..., "-g", "--rg", help="Resource group the account lives in"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in"),
     tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),

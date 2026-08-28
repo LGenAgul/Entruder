@@ -54,14 +54,12 @@ def _check_username(username: str, timeout: int) -> dict:
 def brute_users(
     userlist: str = typer.Option(..., "-l", "--userlist", help="Path to a file of candidate usernames/emails to check (one per line)"),
     domain: str = typer.Option(None, "-d", "--domain", help="Append this domain to any bare (no @) entries in the list (Optional)"),
-    threads: int = typer.Option(5, "-t", "--threads", help="Concurrent requests (Optional, default: 5 — this endpoint throttles aggressively)"),
+    threads: int = typer.Option(5, "-t", "--threads", help="Concurrent requests (Optional, default: 5,  this endpoint throttles aggressively)"),
     timeout: int = typer.Option(10, "-i", "--timeout", help="Per-request timeout in seconds (Optional, default: 10)"),
     output: OutputFormat = output_option(),
 ):
     """
-    Discover which candidate usernames correspond to real Entra ID accounts, via Microsoft's
-    unauthenticated GetCredentialType endpoint. No login/tenant/client-id required — useful for
-    building a validated username list ahead of `brute mfasweep`/`login ropc`/a password spray.
+    Discover valid Entra ID users for a tenant via a given wordlist
     """
     try:
         candidates = _read_userlist(userlist)
