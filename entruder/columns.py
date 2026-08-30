@@ -190,6 +190,24 @@ class Columns:
         ("Publishing Creds",   "publishing_credentials", format_dict_summary),
     ]
 
+    FUNCAPP = [
+        ("Name",               "name"),
+        ("Resource Group",     "resource_group"),
+        ("Location",           "location"),
+        ("Kind",               "kind"),
+        ("State",              "state"),
+        ("Default Hostname",   "default_hostname"),
+        ("HTTPS Only",         "https_only"),
+        ("Public Network",     "public_network"),
+        ("Managed Identity",   "identity", format_dict_summary),
+        ("Runtime",            "runtime"),
+        ("Functions",          "functions", format_string_list),
+        ("Host Keys",          "host_keys", format_dict_summary),
+        ("App Settings",       "app_settings", format_dict_summary),
+        ("Connection Strings", "connection_strings", format_dict_summary),
+        ("Publishing Creds",   "publishing_credentials", format_dict_summary),
+    ]
+
     VAULT = [
         ("Name",              "name"),
         ("Resource Group",    "resource_group"),

@@ -21,4 +21,5 @@ from . import (
     privileges,
     users,
     groups,
+    funcapps
 )

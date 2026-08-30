@@ -14,7 +14,7 @@ from entruder.utils import (
 from ._shared import enum_app, console, columns, prepare_session
 
 
-@enum_app.command("subs")
+@enum_app.command("subscriptions")
 @handle_cli_errors
 def enum_subscriptions(
     tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),

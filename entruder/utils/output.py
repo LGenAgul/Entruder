@@ -1,33 +1,3 @@
-"""Centralized output engine — shared by every command so nobody re-implements
-table/csv/json/xml printing.
-
-Adding a new command? You only need three things:
-
-    1. Declare the columns used for the human (table/csv) views:
-
-           FOO_COLUMNS = [
-               ("Label", "dict_key"),                 # scalar field
-               ("Groups", "groups", pluck("name")),   # nested list -> pick a field
-           ]
-       A column is (label, key) or (label, key, formatter). The formatter takes
-       the raw value and returns a display string; use it for nested values.
-       `pluck(field)` is a ready-made formatter for "list of dicts -> one field".
-
-    2. Add the standard --output flag to the command signature:
-
-           output: OutputFormat = output_option()            # defaults to table
-           output: OutputFormat = output_option(OutputFormat.json)   # or json, etc.
-
-    3. Build your body (a dict, or a list of dicts — nesting is fine) and hand it
-       to render():
-
-           render(console, title, FOO_COLUMNS, body, output=output,
-                  xml_root_tag="foos", xml_item_tag="foo")
-
-json and xml always emit the full nested body; table and csv use the columns.
-That's it — no format-specific code lives in the command.
-"""
-
 import csv
 import io
 import json
