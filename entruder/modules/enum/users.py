@@ -24,7 +24,7 @@ def enum_users(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """Enumerate directory users via Microsoft Graph, using a saved graph session"""
+    """Enumerate directory users via Microsoft Graph, using a saved graph session (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/users"

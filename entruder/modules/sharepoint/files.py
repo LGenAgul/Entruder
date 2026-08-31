@@ -47,8 +47,8 @@ def sharepoint_files(
                 "size": batch_size,
             }]
         }
+        
         result = request_json("POST", url, headers=headers, json=body)
-
         if "value" not in result:
             error = result.get("error", {})
             message = error.get("message") if isinstance(error, dict) else result.get("error_description", "Unknown error")

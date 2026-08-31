@@ -21,6 +21,9 @@ from entruder.utils import (
 
 
 class Columns:
+    """
+    This class stores column arrays used in printing output
+    """
 
     SUBSCRIPTION = [
         ("Id", "id"),
@@ -77,9 +80,7 @@ class Columns:
         ("Tags",                 "tags"),
     ]
 
-    # requiredResourceAccess is resolved into a flat list of readable
-    # "Resource: permission (Scope/Role)" lines by _resolve_required_resource_access
-    # before rendering — see modules/enum/applications.py.
+  
     APPLICATION = [
         ("Display Name",         "displayName"),
         ("App Id",               "appId"),
@@ -92,8 +93,7 @@ class Columns:
         ("Tags",                 "tags"),
     ]
 
-    # Populated from the Microsoft Search API (entityTypes: drive), not the
-    # /sites endpoint, so only siteId/webUrl are available — see modules/sharepoint/sites.py.
+    
     SHAREPOINT_SITES = [
         ("Site ID",  "siteId"),
         ("Web URL",  "webUrl"),
@@ -139,8 +139,7 @@ class Columns:
         ("Tags", "tags")
     ]
 
-    # _type / _relationship / _escalation are synthesized by enum_owned; the raw
-    # directoryObject supplies id + displayName.
+   
     OWNED = [
         ("Type",         "_type"),
         ("Display Name", "displayName"),
@@ -305,9 +304,7 @@ class Columns:
         ("Attachments", "attachments", format_string_list),
     ]
 
-    # roles/administrative_units/owned/app_role_assignments come from /me's
-    # transitive membership + ownership; azure_role_assignments is the ARM
-    # roleAssignments properties blob for the same principal on --sub-id.
+   
     PRIV = [
         ("Display Name",          "displayName"),
         ("UPN",                   "userPrincipalName"),
@@ -322,8 +319,7 @@ class Columns:
         ("Eligible Azure Roles (PIM)", "eligible_azure_role_assignments", format_azure_role_eligibilities),
     ]
 
-    # users/groups/roles are resolved to readable names by _project_ca_policy
-    # before rendering — see modules/enum/conditionalaccess.py.
+  
     CAPOLICY = [
         ("Name",              "displayName"),
         ("State",             "state"),
@@ -400,9 +396,7 @@ class Columns:
         ("Owner Roles",  "ownerRoles", format_string_list),
     ]
 
-    # members/scoped_role_members are only populated when `enum au` is run
-    # with --members/--scoped-roles — absent otherwise, which pluck/
-    # format_string_list both render as an empty cell rather than an error.
+
     ADMIN_UNIT = [
         ("Display Name",       "displayName"),
         ("Id",                 "id"),
@@ -414,14 +408,13 @@ class Columns:
         ("Scoped Role Members", "scoped_role_members", format_string_list),
     ]
 
-    # produced by `brute blobs` — one row per --account given, with every
-    # container name found to exist (public or not) under it.
+   
     BRUTE_BLOB = [
         ("Account",    "account"),
         ("Containers", "containers", format_brute_containers),
     ]
 
-    # produced by `brute users` — one row per candidate confirmed to exist.
+   
     BRUTE_USERS = [
         ("Username",  "username"),
         ("Federated", "federated"),
@@ -435,8 +428,7 @@ class Columns:
         ("App Scope",       "appScopeId"),
     ]
 
-    # pulled straight off the ADSync MSSQL database by `sync extract`;
-    # entropy/encrypted_configuration are raw DPAPI blob bytes.
+   
     ADSYNC_CONFIG = [
         ("Target",                     "target"),
         ("Keyset Id",                  "keyset_id"),

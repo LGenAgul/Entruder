@@ -44,9 +44,7 @@ def get_managed_identity_token(
     output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console"),
 ):
     """
-    Acquire access token(s) from this host's Azure Managed Identity via the IMDS
-    endpoint. Only works when run on an Azure resource with a managed identity
-    attached (VM, VMSS, Container Instance, etc).
+    Acquire access token(s) from this host's Azure Managed Identity via the IMDS endpoint. Only works when run on an Azure resource with a managed identity attached.
     """
     resources = [resource] if resource else list(RESOURCE_SHORTCUTS.keys())
 

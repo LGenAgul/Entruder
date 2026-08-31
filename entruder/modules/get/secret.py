@@ -31,7 +31,7 @@ def get_secret_value(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """Retrieve one secret's actual value."""
+    """Retrieve one secret's actual value. (requires a keyvault token)"""
     tenant, headers = prepare_session(tenant, client_id, "keyvault")
     url = f"https://{vault}.vault.azure.net/secrets/{secret}"
     if version:

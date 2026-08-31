@@ -20,7 +20,7 @@ def get_mail(
     message_id: str = typer.Option(None, "-i", "--message-id", help="Specific message id to fetch (Optional, default: the most recent message in the mailbox)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Fetch a single email message's full content (subject, sender, recipients, body, attachments) via Microsoft Graph. Defaults to the most recent message in the mailbox"""
+    """Fetch a single email message's full content (subject, sender, recipients, body, attachments) via Microsoft Graph. Defaults to the most recent message in the mailbox (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/{'me' if not upn else f'users/{upn}'}"

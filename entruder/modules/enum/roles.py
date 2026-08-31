@@ -6,6 +6,7 @@ from entruder.utils import (
     render,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import enum_app, console, columns, prepare_session, graph_collect, resolve_principal_names
@@ -22,10 +23,11 @@ def enum_roles(
         help="Filter by user UPN (Optional)"),
     output:    OutputFormat = output_option(),
 ):
-    """Enumerate tenant wide Entra directory role assignments, who has what role"""
+    """Enumerate tenant wide Entra directory role assignments, who has what role (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 
+    vprint(f"GET {graph}/roleManagement/directory/roleAssignments")
     assignments = graph_collect(
         f"{graph}/roleManagement/directory/roleAssignments",
         headers, params={"$expand": "roleDefinition"},
@@ -34,7 +36,7 @@ def enum_roles(
     principal_names = resolve_principal_names(
         headers, graph, [a.get("principalId") for a in assignments]
     )
-
+    vprint(f"{len(principal_names)} principal names resolved")
     rows = []
     for a in assignments:
         role_definition = a.get("roleDefinition") or {}

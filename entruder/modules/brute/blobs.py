@@ -15,6 +15,7 @@ from entruder.utils import (
     render,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import brute_app, console, columns
@@ -35,15 +36,11 @@ def _read_wordlist(path_str: str) -> list:
 
 
 def _probe_container(account: str, container: str, timeout: int) -> dict:
-    """Anonymous List Blobs on one container — the operation that succeeds
-    without a token when the container's public access level is "Container"
-    (full public read+list). 404 means the container doesn't exist on this
-    account; 403 means it exists but isn't public. On a public hit, follows
-    NextMarker (same pagination `enum blobs` uses) to pull every blob in the
-    container, the actual endpoints, not just a "this is public" flag."""
+
     url = f"https://{account}.blob.core.windows.net/{container}"
     blobs = []
     marker = None
+    vprint(f"GET {url}")
     while True:
         params = {"restype": "container", "comp": "list", "maxresults": "5000"}
         if marker:
@@ -72,22 +69,21 @@ def brute_blobs(
         help="Storage account to brute-force containers on — repeatable. Accepts either just the "
              "account name or the full <name>.blob.core.windows.net"),
     container_wordlist: str = typer.Option(None, "-c", "--container-wordlist",
-        help="Path to a file of container names (one per line) to try, added on top of the built-in "
-             "list — e.g. a SecLists-style wordlist, for a proper brute force (Optional)"),
+        help="Path to a file of container names (one per line) to try, added on top of the built-in"),
     threads: int = typer.Option(10, "-t", "--threads", help="Concurrent requests (Optional, default: 10)"),
     timeout: int = typer.Option(10, "-i", "--timeout", help="Per-request timeout in seconds (Optional, default: 10)"),
     output: OutputFormat = output_option(),
 ):
     """
-    Brute-force container names against a known storage account and check for anonymous public
-    listing (public access level "Container"). No account-name guessing — you supply the account(s).
+    Brute-force container names against a known storage account and check for anonymous public listing.
     """
     accounts = sorted({a for a in (_normalize_account(a) for a in account) if a})
     if not accounts:
         console.print("[bold red][-][/] --account didn't normalize to a valid storage account name")
         raise typer.Exit(1)
-
+    vprint(f"Accounts: {accounts}")
     try:
+        vprint(f"Using wordlist {container_wordlist}")
         container_names = list(dict.fromkeys(STORAGE_CONTAINER_GUESSES + _read_wordlist(container_wordlist))) \
             if container_wordlist else STORAGE_CONTAINER_GUESSES
     except FileNotFoundError as e:
@@ -95,6 +91,7 @@ def brute_blobs(
         raise typer.Exit(1)
 
     console.print(f"[bold]Trying {len(container_names)} container name(s) against {len(accounts)} account(s)[/]\n")
+    vprint(f"Containers: {container_names[:10]}{'...' if len(container_names) > 10 else ''}")
 
     results = {a: [] for a in accounts}
     with ThreadPoolExecutor(max_workers=threads) as executor:

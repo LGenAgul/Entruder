@@ -18,7 +18,7 @@ def azsync_users(
         client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
         output: OutputFormat = output_option(),
 ):
-    """Enumerate directory users that are synced from on-prem AD via AD Sync/Entra Connect"""
+    """Enumerate directory users that are synced from on-prem AD via AD Sync/Entra Connect (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/users"

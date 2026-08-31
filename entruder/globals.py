@@ -47,7 +47,7 @@ def graph_collect(url, headers, params=None, delegated=False):
     while url:
         vprint(f"GET {url}")
         result = request_json("GET", url, headers=headers, params=params)
-        params = None  # nextLink already carries $select; don't re-send it
+        params = None  
 
         if "value" not in result:
             error = result.get("error", {})

@@ -19,7 +19,7 @@ def get_group(
     group: str = typer.Option(..., "-g", "--group-id", help="Group object id or displayName"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Fetch a single group by object id or displayName via Microsoft Graph"""
+    """Fetch a single group by object id or displayName via Microsoft Graph (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"

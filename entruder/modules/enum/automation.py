@@ -84,7 +84,7 @@ def enum_automation_accounts(
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Automation Accounts in a subscription."""
+    """Enumerate Automation Accounts in a subscription (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -126,7 +126,7 @@ def enum_runbooks(
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(),
 ):
-    """List runbooks in an Automation Account."""
+    """List runbooks in an Automation Account.  (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -169,7 +169,7 @@ def enum_automation_variables(
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(),
 ):
-    """List variables in an Automation Account."""
+    """List variables in an Automation Account.  (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)

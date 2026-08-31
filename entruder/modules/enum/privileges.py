@@ -85,7 +85,7 @@ def enum_priv(
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option()
     ):
-    """ Enumerate Your Users Privileges """
+    """Enumerate Your Users Privileges (requires a graph AND management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -97,6 +97,7 @@ def enum_priv(
     arm_url_base = f"https://management.azure.com/subscriptions/{sub}/providers"
 
     # start with the graph plane
+    vprint(f"GET {graph_url_base}/me")
     me = request_json("GET",f"{graph_url_base}/me", headers=graph_headers)
     if not me.get("id"):
         error = me.get("error", {})
@@ -106,15 +107,20 @@ def enum_priv(
                       "ropc/device/authcode, not secret/cert/foci/kerberos[/dim]")
         raise typer.Exit(1)
 
+    vprint(f"GET {graph_url_base}/me/transitive/MemberOf")
     transitive_member_of = request_json("GET",f"{graph_url_base}/me/transitiveMemberOf", headers=graph_headers)
+    vprint(f"GET {graph_url_base}/me/memberOf/microsoft.graph.administrativeUnit")
     administrative_unit_membership = request_json("GET",f"{graph_url_base}/me/memberOf/microsoft.graph.administrativeUnit", headers=graph_headers)
+    vprint(f"GET {graph_url_base}/me/ownedObjects")
     owned = request_json("GET",f"{graph_url_base}/me/ownedObjects", headers=graph_headers)
+    vprint(f"GET {graph_url_base}/me/appRoleAssignments")
     app_role_assignments = request_json("GET",f"{graph_url_base}/me/appRoleAssignments", headers=graph_headers)
 
     # setting up a filter for assignments on my user
     params = {"$filter":f"principalId eq '{me['id']}'",
               "api-version":"2022-04-01"}
     # now the management plane
+    vprint(f"GET {arm_url_base}/Microsoft.Authorization/roleAssignments)")
     assignments = request_json("GET",f"{arm_url_base}/Microsoft.Authorization/roleAssignments",headers=arm_headers,params=params)
 
     # PIM roles

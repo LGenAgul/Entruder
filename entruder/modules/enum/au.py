@@ -7,6 +7,7 @@ from entruder.utils import (
     render,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import enum_app, console, columns, prepare_session, graph_collect
@@ -22,7 +23,7 @@ def enum_au(
         help="Also enumerate scoped role assignments (restricted management AU delegation) on each administrative unit"),
     output: OutputFormat = output_option(),
 ):
-    """Enumerate Entra administrative units tenant-wide, delegation boundaries used to scope directory role assignments to a subset of users/groups/devices."""
+    """Enumerate Entra administrative units tenant-wide and respective delegation details used to scope directory role assignments to a set of users/groups/devices. (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph_url_base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 
@@ -30,13 +31,15 @@ def enum_au(
     params = {"$select": "id,displayName,description,visibility,membershipType,membershipRule"}
 
     aus = graph_collect(url, headers, params=params)
-
+    
     if members or scoped_roles:
         for au in iter_with_progress(aus, "Enriching administrative units", key=lambda a: a.get("displayName")):
             au_id = au["id"]
             if members:
+                vprint(f"Collecting members for {au["id"]}")
                 au["members"] = graph_collect(f"{url}/{au_id}/members", headers)
             if scoped_roles:
+                vprint(f"Collecting scoped role members for {au["id"]}")
                 scoped = graph_collect(f"{url}/{au_id}/scopedRoleMembers", headers)
                 au["scoped_role_members"] = [
                     f"{DIRECTORY_ROLES.get(s.get('roleId'), {}).get('name', s.get('roleId'))}: "

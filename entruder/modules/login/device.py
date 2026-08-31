@@ -32,7 +32,7 @@ def login_device(
     client_id = resolve_client_id(client_id)
     tokens = {}
     if v2:
-        plane = "graph"
+        plane = resolve_plane_from_resource(resource)
         tokens[plane] = parse_token(device_login_v2(tenant, client_id, scopes, user_agent=user_agent))
     else:
         plane = resolve_plane_from_resource(resource)

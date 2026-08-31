@@ -21,7 +21,7 @@ def get_application(
     app_id: str = typer.Option(..., "-a", "--appid", help="Application or service principal object id"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Fetch a single application or service principal by object id via Microsoft Graph"""
+    """Fetch a single application or service principal by object id via Microsoft Graph (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"

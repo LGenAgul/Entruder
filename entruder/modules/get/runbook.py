@@ -25,7 +25,7 @@ def get_runbook_content(
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(),
 ):
-    """Retrieve a runbook's actual script content, which potentially hides credentials"""
+    """Retrieve a runbook's actual script content, which potentially hides credentials (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)

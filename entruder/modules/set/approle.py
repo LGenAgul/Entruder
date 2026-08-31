@@ -5,6 +5,7 @@ from entruder.utils import (
     handle_cli_errors,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import set_app, console, prepare_session, resolve_user_id, resolve_group_id, resolve_app_role_id
@@ -19,9 +20,8 @@ def set_app_role(
     sp_id: str = typer.Option(None, "--spid", "-s", help="Service Principal ID to assign the role to"),
     resource_id: str = typer.Option(None, "--resourceid", "-r", help="Resource Service Principal ID (the app that defines the role); defaults to MS Graph's own SP"),
     role_id: str = typer.Option(..., "--roleid", "-R", help="App Role ID to assign, or a well-known MS Graph app role name (e.g. Mail.ReadWrite.All)"),
-    output: OutputFormat = output_option(),
 ):
-    """Assign an app role to a user or service principal"""
+    """Assign an app role to a user or service principal (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 
@@ -32,6 +32,7 @@ def set_app_role(
     resource_id = resource_id or MSGRAPH_SP_ID
     role_id = resolve_app_role_id(role_id)
 
+    vprint(f"Using resource id: {resource_id} and role id: {role_id}")
     # Resolve principal
     if user_id:
         principal_id = resolve_user_id(headers, url, user_id)
@@ -40,15 +41,20 @@ def set_app_role(
         principal_id = sp_id
         endpoint = f"{url}/servicePrincipals/{principal_id}/appRoleAssignments"
 
-    response = httpx.post(
-        endpoint,
-        headers=headers,
-        json={
+    vprint(f"resolved principal id to {principal_id}")
+
+    data = {
             "principalId": principal_id,
             "resourceId": resource_id,
             "appRoleId": role_id
         }
+    response = httpx.post(
+        endpoint,
+        headers=headers,
+        json = data
     )
+    vprint(f"POST {endpoint}")
+    vprint(f"with json body: {data}")
 
     if response.status_code == 201:
         console.print(f"[bold green][+][/] Successfully assigned app role {role_id} to {principal_id[0:16]}...")

@@ -7,13 +7,11 @@ from entruder.utils import (
     render,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import enum_app, console, columns, prepare_session, graph_collect, resolve_principal_names
 
-# includeUsers/excludeUsers/includeGroups/excludeGroups mix real object ids
-# with sentinels ("All", "GuestsOrExternalUsers", "None") — only the former
-# are worth a directoryObjects/getByIds round trip.
 _GUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
 
@@ -87,12 +85,14 @@ def enum_ca_policies(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Conditional Access policies via Microsoft Graph"""
+    """Enumerate Conditional Access policies via Microsoft Graph (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 
+    vprint(f"GET {graph}/identity/conditionalAccess/policies")
     policies = graph_collect(f"{graph}/identity/conditionalAccess/policies", headers)
-
+    vprint(f"{len(policies)} policies retrieved, resolving principal names...")
+    
     user_group_ids = set()
     for p in policies:
         users = (p.get("conditions", {}) or {}).get("users", {}) or {}

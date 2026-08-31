@@ -23,13 +23,10 @@ def sharepoint_sites(
     max_sites: int = typer.Option(0, "--max-sites", help="Stop after this many unique sites (0 = no limit)"),
     output: OutputFormat = output_option(),
     ):
-    """Enumerate SharePoint sites visible to the current session via the Microsoft Search API
-    (entityTypes: drive) instead of /sites?search=*, matching GraphRunner's Get-SharePointSiteURLs.
-    This piggybacks on the same backend as the SharePoint/Office search box, so it surfaces whatever
-    sites the current token's user can see with no Sites.Read.All grant required — unlike /sites,
-    which needs that permission and reflects an admin's tenant-wide view rather than this user's."""
+    """Enumerate SharePoint sites visible to the current session via the Microsoft Search API (requires a graph token)."""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
+    
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/search/query"
     batch_size = min(batch_size, 1000)
 

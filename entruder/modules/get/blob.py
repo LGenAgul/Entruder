@@ -62,15 +62,14 @@ def get_blob(
     sas: str = typer.Option(None, "-s", "--sas", help="Account or service SAS token to authenticate with instead of a session token (needs blob read permission)"),
     output: OutputFormat = output_option(),
 ):
-    """Retrieve a single blob's actual content via the Blob Service Get Blob operation.
-    Run with no --tenant/--client-id and no --sas to test anonymous/public exposure directly."""
+    """Retrieve a single blob's actual content via the Blob Service Get Blob operation. Run with no --tenant/--client-id and no --sas to test anonymous/public exposure directly (requires a storage token)."""
     headers = _storage_headers(tenant, client_id, sas)
     sas_params = _parse_sas(sas)
     url = f"https://{account}.blob.core.windows.net/{container}/{blob}"
 
     vprint(f"GET {url}")
     response = httpx.get(url, headers=headers, params=sas_params, timeout=HTTP_TIMEOUT)
-    vprint(f"  -> HTTP {response.status_code} ({len(response.content)} bytes)")
+    vprint(f"HTTP {response.status_code} ({len(response.content)} bytes)")
 
     if response.status_code == 404:
         console.print("[bold red][-][/] Not found (account, container, or blob doesn't exist, or DNS didn't resolve)")

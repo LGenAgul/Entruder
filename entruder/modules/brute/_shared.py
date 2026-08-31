@@ -30,6 +30,10 @@ def classify_ropc_result(result: dict) -> tuple:
     if "AADSTS50079" in description:
         return "gap_unenrolled", "MFA required but user never enrolled"
 
+    if "AADSTS50055" in description:
+        return "gap_expired", "valid password, account requires password change"
+    if "AADSTS50057" in description:
+        return "gap_disabled", "valid password, account is disabled"
     if "AADSTS50076" in description:
         return "expected_mfa", "MFA required (expected)"
 

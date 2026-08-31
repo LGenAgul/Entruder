@@ -21,7 +21,7 @@ def enum_subscriptions(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate subscriptions associated to this tenant"""
+    """Enumerate subscriptions associated to this tenant (requires a management token)"""
 
     tenant, headers = prepare_session(tenant, client_id, "management")
 
@@ -57,7 +57,7 @@ def enum_resources(
     type: str = typer.Option(None, "-y", "--type", help="Resource Type"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate resources within a subscription"""
+    """Enumerate resources within a subscription (requires a management token)"""
     # explicitly ask for subid
     if not sub:
          console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")

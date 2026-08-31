@@ -117,7 +117,7 @@ def enum_keyvaults(
              "(one keyvault data-plane call per vault) — --no-check-access skips it on large subscriptions"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Key Vaults in a subscription and their exposure-relevant settings"""
+    """Enumerate Key Vaults in a subscription and their settings (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -147,6 +147,7 @@ def enum_keyvaults(
         _, kv_headers = prepare_session(tenant, client_id, "keyvault")
         vaults = [_annotate_vault_access(kv_headers, v)
                   for v in iter_with_progress(vaults, "Checking access", key=lambda v: v["name"])]
+    vprint(f"{len(vaults)} vaults retreived")
     render(console, f"Key Vaults in {tenant}", columns.VAULT, vaults,
            output=output, xml_root_tag="vaults", xml_item_tag="vault")
     if output == OutputFormat.table:
@@ -161,12 +162,13 @@ def enum_secrets(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """List secret names/metadata in a vault"""
+    """List secret names/metadata in a vault (requires a keyvault token)"""
     tenant, headers = prepare_session(tenant, client_id, "keyvault")
     url = f"https://{vault}.vault.azure.net/secrets"
     params = {"api-version": API_VERSIONS["keyvault"]}
 
     secrets = [_project_kv_item(s) for s in _kv_collect(url, headers, params)]
+    vprint(f"{len(secrets)} secrets retreived")
     render(console, f"Secrets in {vault}", columns.SECRET, secrets,
            output=output, xml_root_tag="secrets", xml_item_tag="secret")
     if output == OutputFormat.table:
@@ -181,12 +183,13 @@ def enum_keys(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """List key names/metadata in a vault."""
+    """List key names/metadata in a vault. (requires a keyvault token)"""
     tenant, headers = prepare_session(tenant, client_id, "keyvault")
     url = f"https://{vault}.vault.azure.net/keys"
     params = {"api-version": API_VERSIONS["keyvault"]}
 
     keys = [_project_kv_item(k) for k in _kv_collect(url, headers, params)]
+    vprint(f"{len(keys)} keys retreived")
     render(console, f"Keys in {vault}", columns.KEY, keys,
            output=output, xml_root_tag="keys", xml_item_tag="key")
     if output == OutputFormat.table:
@@ -201,7 +204,7 @@ def enum_certificates(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
-    """List certificate names/metadata in a vault."""
+    """List certificate names/metadata in a vault. (requires a keyvault token)"""
     tenant, headers = prepare_session(tenant, client_id, "keyvault")
     url = f"https://{vault}.vault.azure.net/certificates"
     params = {"api-version": API_VERSIONS["keyvault"]}

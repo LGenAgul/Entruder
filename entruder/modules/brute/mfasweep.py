@@ -93,7 +93,7 @@ def login_mfasweep(
                 console.print("[dim]--unsafe set, continuing despite lockout[/dim]")
                 continue
 
-            # anything else: log and keep going rather than assuming it's fatal
+           
             console.print(f"[dim][-] {res_name} / {client_name} — {message}[/dim]")
 
     console.print()

@@ -6,6 +6,7 @@ from entruder.utils import (
     render,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import enum_app, console, columns, prepare_session, graph_collect
@@ -40,7 +41,7 @@ def enum_owned(
              "transitive membership (default on)"),
     output: OutputFormat = output_option(),
 ):
-    """Enumerate everything the current user owns (objects they can modify to escalate) or controls via membership, the escalation blast radius of this identity."""
+    """Enumerate everything the current user owns (objects they can modify to escalate) or controls via membership (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
 
@@ -53,7 +54,7 @@ def enum_owned(
             _annotate_owned(obj, "transitive-mbr")
             for obj in graph_collect(f"{graph}/me/transitiveMemberOf", headers, delegated=True)
         ]
-
+    vprint(f"{len(object)} owned objects retreived")
     render(console, f"Owned & controlled by current user in {tenant}", columns.OWNED,
            objects, output=output, xml_root_tag="owned", xml_item_tag="object")
     if output == OutputFormat.table:

@@ -126,7 +126,7 @@ def enum_webapps(
              "strings — opt-in since this materializes live secret values (three extra ARM calls per site)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Azure App Service web apps in a subscription and their exposure-relevant settings (managed identity, TLS/auth config, public network access)."""
+    """Enumerate Azure App Service web apps in a subscription and their exposure-relevant settings. (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -189,7 +189,7 @@ def enum_webapp(
              "strings — slots commonly carry different, less-watched secrets than production"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """GET the site's deployment slots. Each slot is a full site in its own right (own identity/config/secrets) """
+    """GET the site's deployment slots. Each slot is a full site in its own right (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)

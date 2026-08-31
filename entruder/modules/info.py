@@ -14,7 +14,7 @@ from entruder.utils import (
 from entruder.columns import Columns
 from entruder.console import CONSOLE as console
 
-info_app = typer.Typer(help="Local, offline lookups — token decoding and well-known ID maps", no_args_is_help=True)
+info_app = typer.Typer(help="Local, offline lookups, token decoding and general informations useful for using the tool", no_args_is_help=True)
 columns = Columns()
 
 
@@ -75,9 +75,6 @@ def _analyze_claims(token: str) -> dict:
         "name":              claims.get("name"),
         "object_id":         claims.get("oid"),
         "app_id":            app_id,
-        # app_displayname isn't always issued (depends on optional-claims config,
-        # token version, etc.) — fall back to the well-known client id map, same
-        # pattern as _directory_roles() resolving a wid via DIRECTORY_ROLES.
         "app_display_name":  claims.get("app_displayname") or KNOWN_CLIENT_IDS.get(app_id),
         "tenant_id":         claims.get("tid"),
         "audience":          claims.get("aud"),
@@ -112,10 +109,7 @@ def info_token(
     plane: str = typer.Option(None, "-p", "--plane", help="Only analyze this plane's cached token (graph/management/storage/keyvault). Default: every plane present in the session."),
     output: OutputFormat = output_option(),
 ):
-    """Decode and analyze a JWT: identity type (delegated vs app-only),
-    directory roles held (via wids, flagged by privilege tier), MFA (amr),
-    FOCI-family membership, and expiry. With no --token, analyzes every plane
-    in the active (or --tenant/--client-id) cached session."""
+    """Decode and analyze a JWT returning interesting information it's UPN, Directory Roles, Display Name, etc."""
     if token:
         result = _analyze_claims(token)
         if "error" in result:
@@ -159,9 +153,7 @@ def info_token(
 def info_clients(
     output: OutputFormat = output_option(),
 ):
-    """List well-known Microsoft first-party client IDs this tool recognizes (KNOWN_CLIENT_IDS).
-    Entries with a value in "Resolve As" can be passed to any --client-id option by that name
-    instead of the raw GUID (e.g. --client-id office)."""
+    """List well-known Microsoft first-party client IDs this tool recognizes. Entries within this list can be passed as a --client-id parameter without needing to paste the entire guid"""
     aliases_by_id = {}
     for name, cid in {**CLIENT_ID_ALIASES, **FOCI_CLIENTS}.items():
         aliases_by_id.setdefault(cid, []).append(name)

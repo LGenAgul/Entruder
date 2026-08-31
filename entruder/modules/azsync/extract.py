@@ -168,8 +168,7 @@ def azsync_extract(
         sid: str = typer.Option(None, "-s", "--sid", help="SID of the masterkey owner, required alongside --nthash"),
         output: OutputFormat = output_option(),
 ):
-    """Pull the ADSync configuration off a MSSQL instance backing an Entra Connect / ADSync install.
-    """
+    """Pull the ADSync configuration off an MSSQL Database containing an Entra Connect / ADSync install configuration. If provided DPAPI credentials the password will be further decrypted"""
     if windows_auth and not domain:
         domain = '.'
     mssql = MSSQL(target, port)

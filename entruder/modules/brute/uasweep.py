@@ -23,7 +23,7 @@ def login_uasweep(
     unsafe:      bool = typer.Option(False, "-n", "--unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
 ):
     """
-    Authenticates to a resource using a  range of User-Agent strings to check whether Conditional Access fails to enforce MFA 
+    Authenticates to a resource using a range of User-Agent strings to check whether Conditional Access fails to enforce MFA 
     """
     tenant = require_tenant(tenant, console)
     resource_url = MFA_SWEEP_RESOURCES.get(resource, resource)

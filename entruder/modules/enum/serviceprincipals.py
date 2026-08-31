@@ -27,7 +27,7 @@ def enum_serviceprincipals(
              "to cut through the ~200-300 that exist by default in every tenant"),
     output: OutputFormat = output_option(),
     ):
-    """Enumerate service principals via Microsoft Graph, using a saved graph session"""
+    """Enumerate service principals via Microsoft Graph (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     if owned:

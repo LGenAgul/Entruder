@@ -6,6 +6,7 @@ from entruder.utils import (
     render,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import enum_app, console, columns, prepare_session, graph_collect, resolve_principal_names
@@ -23,19 +24,20 @@ def enum_consents(
              "user in the tenant is implicitly consenting to just by using the app"),
     output:    OutputFormat = output_option(),
 ):
-    """Enumerate OAuth2 delegated permission grants,which apps hold which delegated scopes on whose behalf."""
+    """Enumerate OAuth2 delegated permission grants, which apps hold what delegated scopes on whose behalf. (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
-
+    vprint(f"GET {graph}/oauth2PermissionGrants")
+    
     grants = graph_collect(f"{graph}/oauth2PermissionGrants", headers)
-
+    vprint(f"{len(grants)} grants retrieved, resolving principal names...")
     principal_names = resolve_principal_names(
         headers, graph,
         [g.get("clientId") for g in grants] +
         [g.get("resourceId") for g in grants] +
         [g.get("principalId") for g in grants],
     )
-
+    vprint(f"{len(principal_names)} resolved, retreiving grants...")
     rows = []
     for g in grants:
         row = {

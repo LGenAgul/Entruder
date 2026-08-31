@@ -10,6 +10,7 @@ from ._shared import brute_app
 from . import (
     mfasweep,
     uasweep,
+    pwspray,
     blobs,
     users,
 )

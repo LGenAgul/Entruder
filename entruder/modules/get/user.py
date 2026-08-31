@@ -28,7 +28,7 @@ def get_user(
     username: str = typer.Option(...,"-u","--upn",help="userPrincipalName/email of the target user"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Query a specific user's information, provides more details than the enum users command"""
+    """Query a specific user's information, provides more details than the enum users command (requires a graph token)"""
     from entruder.static import MFA_EXCLUSION_PATTERNS
     tenant, headers = prepare_session(tenant, client_id, "graph")
 

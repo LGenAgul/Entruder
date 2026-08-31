@@ -87,7 +87,6 @@ def enum_applications(
     """Enumerate Entra app registrations, requested API permissions, redirect URIs, and credentials on the app registration itself."""
     tenant, headers = prepare_session(tenant, client_id, "graph")
     graph_url_base = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
-
     if owned:
         url = f"{graph_url_base}/me/ownedObjects"
     else:
@@ -96,11 +95,12 @@ def enum_applications(
     apps = graph_collect(url, headers, params=APP_PARAMS, delegated=owned)
     if owned:
         # /me/ownedObjects is polymorphic (apps, groups, service principals, ...)
+        vprint("Showcasing owned resources:")
         apps = [a for a in apps if a.get("@odata.type") == "#microsoft.graph.application"]
 
     apps = _resolve_required_resource_access(headers, graph_url_base, apps)
     apps = [_project_application(a) for a in apps]
-
+    
     title = f"Applications in {tenant}" + (" (owned by current user)" if owned else "")
     render(console, title, columns.APPLICATION, apps, output=output,
            xml_root_tag="applications", xml_item_tag="application")

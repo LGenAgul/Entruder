@@ -23,11 +23,7 @@ from ._shared import enum_app, console, columns, prepare_session, resource_group
 
 
 def _project_storage(acct):
-    """Flatten a raw ARM storage account into the exposure-relevant shape the
-    STORAGE columns expect. The security-interesting settings live under
-    `properties`; sku/endpoints are nested; the resource group hides in the id.
-    `id` is carried through so json consumers keep it for follow-up calls
-    (listKeys, blob enumeration) even though the table doesn't show it."""
+
     props = acct.get("properties", {}) or {}
     acls = props.get("networkAcls", {}) or {}
     endpoints = props.get("primaryEndpoints", {}) or {}
@@ -51,24 +47,12 @@ def _project_storage(acct):
     }
 
 
-# Control-plane action checked against the effective-permissions response.
-# This API is reliable for `actions` (plain Azure RBAC role assignments), but
-# NOT for `dataActions` — a role granted via group membership or with an
-# ABAC condition often just doesn't show up in dataActions here even though
-# the actual data-plane request succeeds. So container/blob-read access is
-# ground-truthed with a live probe instead (see _check_container_listing) —
-# don't add more dataAction entries to this dict on the assumption they'll
-# be trustworthy.
+
 STORAGE_KEYS_ACTION = "Microsoft.Storage/storageAccounts/listKeys/action"
 
 
 def _permission_allows(permissions, wanted, data_action=False):
-    """Check whether an ARM effective-permissions response (list of
-    {actions,notActions,dataActions,notDataActions}) grants `wanted`, honoring
-    Azure's wildcard action matching (plain string globbing) within the
-    correct namespace (actions vs dataActions are evaluated separately) and
-    notActions/notDataActions taking precedence over an otherwise-matching
-    allow."""
+ 
     allow_key = "dataActions" if data_action else "actions"
     deny_key = "notDataActions" if data_action else "notActions"
     wanted = wanted.lower()
@@ -81,13 +65,7 @@ def _permission_allows(permissions, wanted, data_action=False):
 
 
 def _rbac_permissions(headers, resource_id):
-    """Query ARM's effective-permissions endpoint for the current identity on
-    a specific resource (Permissions - List For Resource). Unlike reading
-    roleAssignments directly, this doesn't need Microsoft.Authorization/
-    roleAssignments/read — it just reports what the caller can already do, so
-    it works for any principal holding at least one role on the resource.
-    Returns None (not raises) on failure, so one account's check failing
-    doesn't kill enumeration of the rest."""
+   
     url = f"https://management.azure.com{resource_id}/providers/Microsoft.Authorization/permissions"
     params = {"api-version": API_VERSIONS["authorization"]}
     permissions = []
@@ -106,12 +84,7 @@ def _rbac_permissions(headers, resource_id):
 
 
 def _check_container_listing(blob_endpoint, storage_headers):
-    """Ground-truth probe: actually attempt List Containers (maxresults=1)
-    with the same best-effort storage auth `enum containers` uses, instead of
-    predicting the outcome from RBAC metadata. This can never disagree with
-    what `enum containers` reports for the same account, because it's the
-    same request. Returns True/False, or "unknown" if there's no blob
-    endpoint to probe or the request itself couldn't be made."""
+  
     if not blob_endpoint:
         return "unknown"
     try:
@@ -120,17 +93,12 @@ def _check_container_listing(blob_endpoint, storage_headers):
     except httpx.HTTPError as e:
         vprint(f"container-listing probe failed for {blob_endpoint}: {e}")
         return "unknown"
+    vprint(f"GET {blob_endpoint})")
     return response.status_code == 200
 
 
 def _annotate_storage_access(management_headers, storage_headers, acct):
-    """Enrich a projected storage account with what the current identity can
-    actually do on it. `can_list_keys` (control-plane) comes from the ARM
-    effective-permissions self-check, where that API is reliable. "unknown"
-    there means the permissions check itself failed (e.g. the caller can't
-    even call that endpoint on this resource) rather than a definite no.
-    `can_list_containers` is a live data-plane probe instead — see
-    _check_container_listing for why."""
+   
     permissions = _rbac_permissions(management_headers, acct["id"])
     acct["can_list_keys"] = "unknown" if permissions is None else _permission_allows(permissions, STORAGE_KEYS_ACTION)
     acct["can_list_containers"] = _check_container_listing(acct.get("blob_endpoint"), storage_headers)
@@ -164,13 +132,7 @@ def _parse_sas(sas):
 
 
 def _storage_headers(tenant, client_id, sas=None):
-    """Best-effort auth for the blob data-plane. Precedence: an explicit SAS
-    token wins (it authenticates via the query string, so no Authorization
-    header is attached); otherwise, if a tenant/client (explicit args or the
-    active cache) resolves to a saved session with a storage token, attach it.
-    Unlike prepare_session, missing auth is NOT fatal here — running with
-    neither exercises the anonymous/public-access path, which is usually the
-    interesting security question for this tool."""
+
     headers = {"x-ms-version": API_VERSIONS["storage_data"]}
     if sas:
         vprint("Using provided SAS token for storage data-plane auth")
@@ -249,7 +211,7 @@ def enum_storage_accounts(
              "whether you could — opt-in since this materializes live key values in the output"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate storage accounts in a subscription and their exposure-relevant settings."""
+    """Enumerate storage accounts in a subscription and their exposure-relevant settings. (requires a management token)"""
     # explicitly ask for subid
     if not sub:
          console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
@@ -276,6 +238,7 @@ def enum_storage_accounts(
         params = None
 
     accounts = [_project_storage(a) for a in accounts]
+    vprint(f"{len(accounts)} storage account(s) found") 
     if check_access:
         storage_headers = _storage_headers(tenant, client_id)
         accounts = [_annotate_storage_access(headers, storage_headers, a)
@@ -299,7 +262,7 @@ def enum_containers(
     output: OutputFormat = output_option(),
 ):
     """
-    List containers in a storage account via the Blob Service List Containers operation.
+    List containers in a storage account via the Blob Service List Containers operation. (requires a storage token)
     """
     headers = _storage_headers(tenant, client_id, sas)
     sas_params = _parse_sas(sas)
@@ -334,7 +297,7 @@ def enum_blobs(
     sas: str = typer.Option(None, "-s", "--sas", help="Account or service SAS token to authenticate with instead of a session token (needs container list permission)"),
     output: OutputFormat = output_option(),
 ):
-    """List blobs in a container via the Blob Service List Blobs operation. Run with no --tenant/--client-id and user session to test anonymous/public exposure directly"""
+    """List blobs in a container via the Blob Service List Blobs operation (requires a storage token). Run with no --tenant/--client-id and user session to test anonymous/public exposure directly"""
     headers = _storage_headers(tenant, client_id, sas)
     sas_params = _parse_sas(sas)
     endpoint = f"https://{account}.blob.core.windows.net"

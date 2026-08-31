@@ -197,7 +197,11 @@ def validate_json(session: dict) -> bool:
 
 
 def check_expired(session: dict, plane) -> bool:
+    if not session:
+        return True
     expires_at = session.get("tokens",{}).get(plane,{}).get("expires_at")
+    if expires_at is None:
+        return True
     now = int(time.time())
     if expires_at and expires_at <= (now + EXPIRY_BUFFER):
         return True

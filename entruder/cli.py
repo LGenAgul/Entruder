@@ -32,8 +32,7 @@ def _rich_format_help_reset_sections(*args, **kwargs):
 ru.rich_format_help = _rich_format_help_reset_sections
 
 def _plain_section(renderable, *, border_style=None, title=None, title_align=None, **_ignored):
-    # The error panel is a standalone print (not preceded by help text's own
-    # trailing blank line), so it always wants its own leading blank line.
+ 
     top_pad = 1 if (title == ru.ERRORS_PANEL_TITLE or not _section_state["first"]) else 0
     _section_state["first"] = False
     parts = [Text(str(title), style="bold")] if title else []

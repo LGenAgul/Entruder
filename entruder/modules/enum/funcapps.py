@@ -32,8 +32,7 @@ def _project_funcapp(site):
 
 
 def _fetch_site_config(headers, site_id):
-    """GET the site's actual web config — the linux/windowsFxVersion here is
-    what `exploit funcapp` needs to know to build a runtime-matching payload."""
+   
     url = f"https://management.azure.com{site_id}/config/web"
     params = {"api-version": API_VERSIONS["web"]}
     vprint(f"GET {url}")
@@ -47,9 +46,7 @@ def _fetch_site_config(headers, site_id):
 
 
 def _list_functions(headers, site_id):
-    """GET the site's individual functions. Each entry's bindings reveal the
-    trigger type (httpTrigger, timerTrigger, ...) — the concrete attack
-    surface once the app is otherwise accessible."""
+    
     url = f"https://management.azure.com{site_id}/functions"
     params = {"api-version": API_VERSIONS["web"]}
     vprint(f"GET {url}")
@@ -71,9 +68,7 @@ def _project_function(func):
 
 
 def _list_host_keys(headers, site_id):
-    """POST the site's host/default/listkeys action — the master key and
-    per-function default keys, which let you call HTTP-triggered functions
-    (and the /admin API) directly, bypassing any auth the trigger itself expects."""
+    
     url = f"https://management.azure.com{site_id}/host/default/listkeys"
     params = {"api-version": API_VERSIONS["web"]}
     vprint(f"POST {url}")
@@ -87,8 +82,7 @@ def _list_host_keys(headers, site_id):
 
 
 def _list_publishing_credentials(headers, site_id):
-    """POST publishingcredentials/list — Kudu/Scm host credentials, the same
-    endpoint `exploit funcapp` relies on for zip deployment."""
+    
     url = f"https://management.azure.com{site_id}/config/publishingcredentials/list"
     params = {"api-version": API_VERSIONS["web"]}
     vprint(f"POST {url}")
@@ -109,9 +103,7 @@ def _list_publishing_credentials(headers, site_id):
 
 
 def _list_app_settings(headers, site_id):
-    """POST appsettings/list — app settings routinely hold connection
-    strings/API keys/secrets, and FUNCTIONS_WORKER_RUNTIME tells you the
-    payload language `exploit funcapp` needs."""
+
     url = f"https://management.azure.com{site_id}/config/appsettings/list"
     params = {"api-version": API_VERSIONS["web"]}
     vprint(f"POST {url}")
@@ -125,7 +117,7 @@ def _list_app_settings(headers, site_id):
 
 
 def _list_connection_strings(headers, site_id):
-    """POST connectionstrings/list."""
+
     url = f"https://management.azure.com{site_id}/config/connectionstrings/list"
     params = {"api-version": API_VERSIONS["web"]}
     vprint(f"POST {url}")
@@ -145,18 +137,12 @@ def enum_funcapps(
     client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     check_config: bool = typer.Option(True, "-h/-H", "--check-config/--no-check-config",
-        help="Also fetch each app's runtime (linux/windowsFxVersion) and its individual functions "
-             "with their trigger bindings — two extra ARM calls per app, so --no-check-config skips "
-             "both on large subscriptions"),
+        help="Also fetch the app's runtime configuration and its individual functions"),
     list_secrets: bool = typer.Option(False, "-l", "--list-secrets",
-        help="Retrieve each app's host keys (master key + function keys), publishing credentials, "
-             "app settings, and connection strings — opt-in since this materializes live secret "
-             "values that let you invoke functions or deploy code directly (four extra ARM calls per app)"),
+        help="Also retreive each app's host and secret keys"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Enumerate Azure Function Apps in a subscription — the Microsoft.Web/sites resources whose
-    kind contains 'functionapp' — and their exposure-relevant settings (managed identity, trigger
-    surface, host keys, public network access)."""
+    """Enumerate all function apps in a given subscription. (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)
@@ -182,6 +168,7 @@ def enum_funcapps(
         params = None
 
     sites = [s for s in sites if "functionapp" in (s.get("kind") or "").lower()]
+    vprint(f"{len(sites)} function app(s) identified")
     funcapps = [_project_funcapp(s) for s in sites]
 
     if check_config:

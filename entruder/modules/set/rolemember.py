@@ -5,6 +5,7 @@ from entruder.utils import (
     handle_cli_errors,
     OutputFormat,
     output_option,
+    vprint
 )
 
 from ._shared import set_app, console, prepare_session, resolve_user_id, resolve_role_id
@@ -18,9 +19,8 @@ def set_roleMember(
     role_id: str = typer.Option(...,    "-r", "--role-id"  , help="Role ID or display name to assign (e.g. 'Global Administrator')"),
     user_id: str = typer.Option(...,    "-u", "--user-id"  , help="User ID or UPN of the user to add"),
     scope: str = typer.Option("/",      "-s", "--scope"    , help="Assignment scope (default: tenant-wide)"),
-    output: OutputFormat = output_option(),
 ):
-    """Add a user to a directory role"""
+    """Add a user to a directory role (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}"
@@ -38,7 +38,7 @@ def set_roleMember(
             "directoryScopeId": scope
         }
     )
-
+    vprint(f"[dim] POST {url}/roleManagement/directory/roleAssignments")
     if response.status_code == 201:
         console.print(f"[bold green][+][/] Successfully assigned role {role_id} to {user_id[0:16]}...")
     elif response.status_code == 400 and "already exist" in response.text.lower():

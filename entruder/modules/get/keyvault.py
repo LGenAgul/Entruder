@@ -46,8 +46,7 @@ def get_keyvault(
     sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
-    """Fetch a single Key Vault's ARM properties by name (network rules, RBAC/access-policy mode,
-    soft delete, etc). For its secrets/keys/certificates use enum secrets/enum keys/enum certificates instead."""
+    """Fetch a single Key Vault's ARM properties by name. (requires a management token)"""
     if not sub:
         console.print(f"[bold red][-][/] Please provide a subscription Id explicitly")
         raise typer.Exit(1)

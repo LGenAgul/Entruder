@@ -1,18 +1,3 @@
-"""
-Minimal .NET Binary XML (MC-NBFX / "application/soap+msbin1") codec plus the
-MSOnline password-hash helpers, ported from AADInternals' AzureADConnectAPI.
-
-The AzureAD Connect sync SOAP endpoint (adminwebservice.microsoftonline.com/
-provisioningservice.svc) only speaks WCF binary XML, so we need to serialise the
-request envelope to MC-NBFX and parse the binary response back.
-
-Write path: we emit *literal* records only (no static-dictionary references).
-That is fully valid msbin1 and a conformant WCF reader reconstructs the exact
-same infoset, which keeps the encoder small and removes the guesswork around
-dictionary-id parity. Read path: the server answers with heavy dictionary use,
-so the reader below implements the WCF static string dictionary and the common
-element/attribute/text records.
-"""
 import hashlib
 import os
 import struct
