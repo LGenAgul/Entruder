@@ -2,7 +2,12 @@ name: Build Release Binaries
 
 on:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to attach binaries to (e.g. v1.0.0)"
+        required: true
 
 permissions:
   contents: write
@@ -26,6 +31,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name || github.event.release.tag_name }}
 
       - uses: actions/setup-python@v5
         with:
@@ -50,6 +57,7 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag_name || github.event.release.tag_name }}
           files: dist/${{ matrix.asset_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
