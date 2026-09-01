@@ -1,3 +1,9 @@
+import sys
+
+if sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import typer
 from entruder.static import BANNER
 from entruder.console import CONSOLE, set_color
