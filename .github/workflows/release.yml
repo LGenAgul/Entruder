@@ -1,0 +1,55 @@
+name: Build Release Binaries
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset_name: entruder-linux-amd64
+            binary_path: dist/entruder
+          - os: windows-latest
+            asset_name: entruder-windows-amd64.exe
+            binary_path: dist/entruder.exe
+          - os: macos-latest
+            asset_name: entruder-macos-arm64
+            binary_path: dist/entruder
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Build binary
+        run: pyinstaller --onefile --name entruder entruder.py
+
+      - name: Smoke test binary
+        shell: bash
+        run: "${{ matrix.binary_path }} --help"
+
+      - name: Rename binary
+        shell: bash
+        run: cp "${{ matrix.binary_path }}" "dist/${{ matrix.asset_name }}"
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ matrix.asset_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
