@@ -18,10 +18,10 @@ from ._shared import get_app, console, prepare_session, object_columns
 @get_app.command("file")
 @handle_cli_errors
 def get_file(
-    tenant: str = typer.Option(None, "-t", "--tenant"),
-    client_id: str = typer.Option(None, "-c", "--client-id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     drive_item_id: str = typer.Option(..., "-d", "--drive-item-id",
-        help="Drive item ID in driveId:itemId format from sharepoint files output"),
+        help="Drive item ID in driveId:itemId format from sharepoint files output (Mandatory)"),
     output_path: str = typer.Option(None, "-o", "--output",
         help="Save to this path (default: current directory using the original filename)"),
 ):

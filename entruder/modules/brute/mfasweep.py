@@ -17,11 +17,11 @@ from ._shared import brute_app, console, classify_ropc_result
 @brute_app.command("mfasweep")
 @handle_cli_errors
 def login_mfasweep(
-    tenant:   str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    tenant:   str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
     username: str = typer.Option(..., "-u", "--upn", help="Username"),
     password: str = typer.Option(..., "-p", "--password", help="Password"),
     resource: str = typer.Option(None, "-r", "--resource", help="Limit the sweep to one resource (Optional, default: sweep all known resources)"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Limit the sweep to one client ID (Optional, default: sweep all FOCI client IDs)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Limit the sweep to one client ID (Optional, default: sweep all FOCI client IDs) (will be cached upon explicit use)"),
     unsafe: bool = typer.Option(False, "-n", "--unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
     user_agent: str = typer.Option(None, "-a", "--user-agent", help="Hold the User-Agent header fixed to this value across the whole sweep (Optional; to sweep the User-Agent itself, use `login uasweep`)"),
 ):

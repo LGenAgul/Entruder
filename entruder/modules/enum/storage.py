@@ -198,17 +198,13 @@ def _xml_element_to_dict(element):
 @enum_app.command("storage-accounts")
 @handle_cli_errors
 def enum_storage_accounts(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id of the target (Mandatory)"),
     check_access: bool = typer.Option(True, "-a/-A", "--check-access/--no-check-access",
-        help="Also check what the current identity can do on each account: an ARM RBAC "
-             "self-check for key listing, plus a live container-listing probe (same "
-             "auth/request `enum containers` uses) — one ARM call and one blob-endpoint "
-             "call per account, so --no-check-access skips both on large subscriptions"),
+        help="Also check what the current identity can do on each account (Optional)"),
     list_keys: bool = typer.Option(False, "-l", "--list-keys",
-        help="Retrieve the actual shared access keys (listKeys/action) for every account, not just "
-             "whether you could — opt-in since this materializes live key values in the output"),
+        help="Retrieve the actual shared access keys (listKeys/action) for every account (Optional, can be slow and may require elevated permissions)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate storage accounts in a subscription and their exposure-relevant settings. (requires a management token)"""
@@ -255,10 +251,10 @@ def enum_storage_accounts(
 @enum_app.command("containers")
 @handle_cli_errors
 def enum_containers(
-    account: str = typer.Option(..., "-a", "--account", help="Storage account name (without .blob.core.windows.net)"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional — used to attach a cached storage token)"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional — used to attach a cached storage token)"),
-    sas: str = typer.Option(None, "-s", "--sas", help="Account SAS token to authenticate with instead of a session token (needs service resource type + list permission)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID  (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    account: str = typer.Option(..., "-a", "--account", help="Storage account name (without .blob.core.windows.net) (Mandatory)"),
+    sas: str = typer.Option(None, "-s", "--sas", help="Account SAS token to authenticate with instead of a session token (Optional) (needs service resource type + list permission)"),
     output: OutputFormat = output_option(),
 ):
     """
@@ -292,8 +288,8 @@ def enum_blobs(
     account: str = typer.Option(..., "-a", "--account", help="Storage account name (without .blob.core.windows.net)"),
     container: str = typer.Option(..., "-n", "--container", help="Container name"),
     prefix: str = typer.Option(None, "-p", "--prefix", help="Only list blobs whose name starts with this prefix"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional — used to attach a cached storage token)"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional — used to attach a cached storage token)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional — used to attach a cached storage token) (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional — used to attach a cached storage token) (will be cached upon explicit use)"),
     sas: str = typer.Option(None, "-s", "--sas", help="Account or service SAS token to authenticate with instead of a session token (needs container list permission)"),
     output: OutputFormat = output_option(),
 ):

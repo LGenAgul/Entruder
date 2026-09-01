@@ -39,8 +39,8 @@ def _imds_acquire(resource_url, client_id=None):
 @handle_cli_errors
 def get_managed_identity_token(
     resource: str = typer.Option(None, "-r", "--resource", help="Target resource for the token (Optional, default: every plane in graph/management/storage/keyvault)"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID of a user-assigned managed identity (Optional, default: the system-assigned identity)"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID to file the session under (Optional, default: read from the token's tid claim)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID of a user-assigned managed identity (Optional, default: the system-assigned identity) (will be cached upon explicit use)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID to file the session under (Optional, default: read from the token's tid claim) (will be cached upon explicit use)"),
     output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console"),
 ):
     """

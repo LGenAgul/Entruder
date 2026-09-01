@@ -102,10 +102,9 @@ def _analyze_claims(token: str) -> dict:
 @handle_cli_errors
 def info_token(
     token: str = typer.Option(None, "-k", "--token",
-        help="Raw JWT to analyze directly (e.g. a token captured out-of-band). "
-             "Skips the session cache entirely — no auth needed for this, it's a local decode."),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional — selects a specific cached session instead of the active one)"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional — selects a specific cached session instead of the active one)"),
+        help="Raw JWT to analyze directly (Optional)."),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID of the cached session file to analyze (Optional)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID of the cached session file to analyze (Optional)"),
     plane: str = typer.Option(None, "-p", "--plane", help="Only analyze this plane's cached token (graph/management/storage/keyvault). Default: every plane present in the session."),
     output: OutputFormat = output_option(),
 ):

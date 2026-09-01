@@ -40,10 +40,10 @@ def _find_vault_id(headers, sub, vault_name):
 @get_app.command("keyvault")
 @handle_cli_errors
 def get_keyvault(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net)"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id of the target (Mandatory)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Fetch a single Key Vault's ARM properties by name. (requires a management token)"""

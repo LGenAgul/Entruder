@@ -17,12 +17,12 @@ from ._shared import login_app, console
 @login_app.command("authcode")
 @handle_cli_errors
 def login_authcode(
-    tenant:        str = typer.Option(...,  "-t", "--tenant",       help="Tenant ID"),
-    client_id:     str = typer.Option(...,  "-c", "--client-id",     help="Client ID"),
+    tenant:        str = typer.Option(...,  "-t", "--tenant",       help="Tenant ID (Mandatory here, will be cached upon explicit use)"),
+    client_id:     str = typer.Option(...,  "-c", "--client-id",     help="Client ID (Mandatory here, will be cached upon explicit use)"),
     scopes:        str = typer.Option("https://graph.microsoft.com/User.Read", "-p", "--scopes",
-                                       help="Comma-separated delegated scopes to request (v2 endpoint); openid/profile/offline_access are appended automatically. Don't use .default here — that's for app-only grants (see `login secret`/`login cert`), and AAD rejects it mixed with other scopes"),
+                                       help="Comma-separated delegated scopes to request (v2 endpoint, without .default) (Default: 'User.Read')"),
     redirect_uri:  str = typer.Option("http://localhost:8400", "-r", "--redirect-uri",
-                                       help="Redirect URI registered on the target app (must match exactly)"),
+                                       help="Redirect URI registered on the target app (must match exactly) (Default: 'http://localhost:8400')"),
     client_secret: str = typer.Option(None, "-s", "--secret", help="Client secret, if redeeming as a confidential client (Optional)"),
     code:          str = typer.Option(None, "-d", "--code",
                                        help="Skip the interactive flow and redeem a code captured out-of-band, e.g. via AiTM phishing (Optional)"),
@@ -32,7 +32,7 @@ def login_authcode(
     no_browser:    bool = typer.Option(False, "-b", "--no-browser", help="Don't auto-open a browser, just print the URL to open manually (Optional)"),
     output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console (Optional)"),
     user_agent:    str = typer.Option(None, "-u", "--user-agent",
-                                       help="Override the User-Agent header sent on the token exchange (Optional; the interactive /authorize leg still goes through your real browser)"),
+                                       help="Override the User-Agent header sent on the token exchange (Optional, the interactive /authorize leg still goes through your real browser)"),
 ):
     """
     Authenticate via the OAuth2 authorization code flow (v2 endpoint, PKCE by default).

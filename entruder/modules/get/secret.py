@@ -24,11 +24,11 @@ def _kv_item_name(item_id):
 @get_app.command("secret-value")
 @handle_cli_errors
 def get_secret_value(
-    vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net)"),
-    secret: str = typer.Option(..., "-s", "--secret", help="Secret name"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    vault: str = typer.Option(..., "-v", "--vault", help="Key Vault name (without .vault.azure.net) (Mandatory)"),
+    secret: str = typer.Option(..., "-s", "--secret", help="Secret name (Mandatory)"),
     version: str = typer.Option(None, "-e", "--version", help="Specific version (defaults to the current version)"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
     output: OutputFormat = output_option(),
 ):
     """Retrieve one secret's actual value. (requires a keyvault token)"""

@@ -34,11 +34,10 @@ def _annotate_owned(obj, relationship):
 @enum_app.command("owned")
 @handle_cli_errors
 def enum_owned(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    control: bool = typer.Option(True, "-r/-R", "--control/--no-control",
-        help="Also include groups and directory roles the user inherits via "
-             "transitive membership (default on)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    control: bool = typer.Option(True, "-r", "--control/--no-control",
+        help="Also include groups and directory roles the user inherits via transitive membership (default on)"),
     output: OutputFormat = output_option(),
 ):
     """Enumerate everything the current user owns (objects they can modify to escalate) or controls via membership (requires a graph token)"""

@@ -14,12 +14,12 @@ from json import dumps
 @set_app.command("app-secret")
 @handle_cli_errors
 def set_app_secret(
-    tenant: str = typer.Option(None, "--tenant", "-t", help="Tenant ID"),
-    client_id: str = typer.Option(None, "--clientid", "-c", help="Client ID"),
-    app_id: str = typer.Option(..., "--appid", "-a", help="Application object ID to add the secret to"),
-    description: str = typer.Option("backup", "--description", "-d", help="Secret display name"),
-    years: int = typer.Option(1, "--years", "-y", help="Secret lifetime in years"),
-    write: bool = typer.Option(True, "--write", "-w", help="Write secret to cache directory")
+    tenant: str = typer.Option(None, "--tenant", "-t", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "--clientid", "-c", help="Client ID (will be cached upon explicit use)"),
+    app_id: str = typer.Option(..., "--appid", "-a", help="Application object ID to add the secret to (Mandatory)"),
+    description: str = typer.Option("backup", "--description", "-d", help="Secret display name (Optional, default: 'backup')"),
+    years: int = typer.Option(1, "--years", "-y", help="Secret lifetime in years (Optional, default: 1)"),
+    write: bool = typer.Option(True, "--write", "-w", help="Write secret to cache directory (Optional, default: True)" )
 ):
     """Add a client secret to an application. Enables authentication as that app's service principal (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")

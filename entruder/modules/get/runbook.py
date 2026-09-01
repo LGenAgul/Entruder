@@ -17,12 +17,12 @@ from ._shared import get_app, console, columns, prepare_session
 @get_app.command("runbook-content")
 @handle_cli_errors
 def get_runbook_content(
-    runbook: str = typer.Option(..., "-b", "--runbook", help="Runbook name (see `enum runbooks`)"),
-    account: str = typer.Option(..., "-a", "--account", help="Automation Account name"),
-    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id of the target runbook (Mandatory)"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in (Mandatory)"),
+    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (Mandatory)"),
+    runbook: str = typer.Option(..., "-b", "--runbook", help="Runbook name (Mandatory)"),
     output: OutputFormat = output_option(),
 ):
     """Retrieve a runbook's actual script content, which potentially hides credentials (requires a management token)"""

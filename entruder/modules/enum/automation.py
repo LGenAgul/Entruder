@@ -79,9 +79,9 @@ def _project_variable(var):
 @enum_app.command("automation-accounts")
 @handle_cli_errors
 def enum_automation_accounts(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription ID of the target automation account (Mandatory)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate Automation Accounts in a subscription (requires a management token)"""
@@ -119,11 +119,11 @@ def enum_automation_accounts(
 @enum_app.command("runbooks")
 @handle_cli_errors
 def enum_runbooks(
-    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (see `enum automation-accounts`)"),
-    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription ID of the target automation account (Mandatory)"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in (Mandatory)"),
+    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (Mandatory)"),
     output: OutputFormat = output_option(),
 ):
     """List runbooks in an Automation Account.  (requires a management token)"""
@@ -162,11 +162,11 @@ def enum_runbooks(
 @enum_app.command("automation-variables")
 @handle_cli_errors
 def enum_automation_variables(
-    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (see `enum automation-accounts`)"),
-    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription ID of the target automation account (Mandatory)"),
+    rg: str = typer.Option(..., "-r", "--rg", help="Resource group the account lives in (Mandatory)"),
+    account: str = typer.Option(..., "-a", "--account", help="Automation Account name (Mandatory)"),
     output: OutputFormat = output_option(),
 ):
     """List variables in an Automation Account.  (requires a management token)"""

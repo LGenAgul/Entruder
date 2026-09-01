@@ -14,9 +14,9 @@ from ._shared import get_app, console, columns, prepare_session, graph_get
 @get_app.command("mail")
 @handle_cli_errors
 def get_mail(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    upn: str = typer.Option(None, "-u", "--upn", help="Mailbox owner's userPrincipalName/email (Optional, default: 'me', the signed-in user on a delegated token)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    upn: str = typer.Option(None, "-u", "--upn", help="Mailbox owner's userPrincipalName/email (Optional, default: your user)"),
     message_id: str = typer.Option(None, "-i", "--message-id", help="Specific message id to fetch (Optional, default: the most recent message in the mailbox)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):

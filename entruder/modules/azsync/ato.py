@@ -239,8 +239,8 @@ def _generate_password(length=20):
 @azsync_app.command("ato")
 @handle_cli_errors
 def azsync_ato(
-    tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID (or domain) of the target directory"),
-    client_id: str = typer.Option("1b730954-1685-4b74-9bfd-dac224a7b894", "-c", "--client-id", help="Public client ID for the ROPC token (Optional, defaults to Azure AD PowerShell)"),
+    tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID (or domain) of the target directory (will be cached upon explicit use)"),
+    client_id: str = typer.Option("1b730954-1685-4b74-9bfd-dac224a7b894", "-c", "--client-id", help="Public client ID for the ROPC token (Optional, defaults to Azure AD PowerShell) (will be cached upon explicit use)"),
     username: str = typer.Option(..., "-u", "--username", help="UPN of the on-prem sync account (e.g. Sync_HOST_xxxx@tenant.onmicrosoft.com)"),
     password: str = typer.Option(..., "-p", "--password", help="Password of the sync account"),
     ga_id: str = typer.Option(None, "-g", "--ga-id", help="Object ID (or UPN) of the target account to take over (Optional, auto-discovers a Global Administrator if omitted)"),

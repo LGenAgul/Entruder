@@ -19,7 +19,7 @@ from ._shared import login_app, console
 @login_app.command("foci")
 @handle_cli_errors
 def login_foci(
-    tenant:        str = typer.Option(None,  "-t", "--tenant",  help="Tenant ID"),
+    tenant:        str = typer.Option(None,  "-t", "--tenant",  help="Tenant ID (will be cached upon explicit use)"),
     refresh_token: str = typer.Option(None,  "-o", "--token",   help="Refresh token to test across FOCI family (defaults to the active session's saved refresh token)"),
     resource:      str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
     output_tokens: bool = typer.Option(False, "-u", "--output", help="Output tokens to console (Optional)"),

@@ -22,7 +22,7 @@ from ._shared import get_app, console, columns
 @get_app.command("tenant")
 @handle_cli_errors
 def get_tenant(
-    domain: str = typer.Option(..., "-d", "--domain", help="Domain Name"),
+    domain: str = typer.Option(..., "-d", "--domain", help="Domain Name of the target tenant (Mandatory)"),
     output: OutputFormat = output_option(),
 ):
     """Fetch a single tenant's identity/federation info by domain"""

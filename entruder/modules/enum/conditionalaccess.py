@@ -81,8 +81,8 @@ def _project_ca_policy(policy, names):
 @enum_app.command("cap")
 @handle_cli_errors
 def enum_ca_policies(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate Conditional Access policies via Microsoft Graph (requires a graph token)"""

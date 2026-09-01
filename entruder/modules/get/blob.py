@@ -57,8 +57,8 @@ def get_blob(
     account: str = typer.Option(..., "-a", "--account", help="Storage account name (without .blob.core.windows.net)"),
     container: str = typer.Option(..., "-n", "--container", help="Container name"),
     blob: str = typer.Option(..., "-b", "--blob", help="Blob name (full path within the container)"),
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional, used to attach a cached storage token)"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional, used to attach a cached storage token)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (optional, used to attach a cached storage token) (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (optional, used to attach a cached storage token) (will be cached upon explicit use)"),
     sas: str = typer.Option(None, "-s", "--sas", help="Account or service SAS token to authenticate with instead of a session token (needs blob read permission)"),
     output: OutputFormat = output_option(),
 ):

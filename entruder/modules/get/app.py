@@ -16,9 +16,9 @@ from ._shared import get_app, console, prepare_session, object_columns
 @get_app.command("app")
 @handle_cli_errors
 def get_application(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    app_id: str = typer.Option(..., "-a", "--appid", help="Application or service principal object id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    app_id: str = typer.Option(..., "-a", "--appid", help="Application or service principal object id (Mandatory)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Fetch a single application or service principal by object id via Microsoft Graph (requires a graph token)"""

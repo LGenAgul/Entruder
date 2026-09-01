@@ -133,13 +133,13 @@ def _list_connection_strings(headers, site_id):
 @enum_app.command("funcapps")
 @handle_cli_errors
 def enum_funcapps(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription ID of the target subscription (Mandatory)"),
     check_config: bool = typer.Option(True, "-h/-H", "--check-config/--no-check-config",
-        help="Also fetch the app's runtime configuration and its individual functions"),
+        help="Also fetch the app's runtime configuration and its individual functions (Optional, can be slow)"),
     list_secrets: bool = typer.Option(False, "-l", "--list-secrets",
-        help="Also retreive each app's host and secret keys"),
+        help="Also retreive each app's host and secret keys (Optional, can be slow and may require elevated permissions)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate all function apps in a given subscription. (requires a management token)"""

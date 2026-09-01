@@ -77,11 +77,10 @@ def _project_application(app):
 @enum_app.command("apps")
 @handle_cli_errors
 def enum_applications(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     owned: bool = typer.Option(False, "-w", "--owned",
-        help="Only show app registrations owned by the current signed-in user "
-             "(requires a delegated session, ropc/device/authcode, not app-only secret/cert/foci/kerberos)"),
+        help="Only show app registrations owned by the current signed-in user (Optional)(requires a delegated session, ropc/device/authcode)"),
     output: OutputFormat = output_option(),
     ):
     """Enumerate Entra app registrations, requested API permissions, redirect URIs, and credentials on the app registration itself."""

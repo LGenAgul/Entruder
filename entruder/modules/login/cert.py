@@ -20,10 +20,10 @@ from ._shared import login_app, console
 @login_app.command("cert")
 @handle_cli_errors
 def login_cert(
-    tenant:    str = typer.Option(...,  "-t", "--tenant",   help="Tenant ID"),
-    client_id: str = typer.Option(...,  "-c", "--client-id", help="Client ID"),
-    cert:      str = typer.Option(...,  "-e", "--cert",     help="Path to certificate file (.pem/.crt)"),
-    key:       str = typer.Option(...,  "-k", "--key",      help="Path to private key file (.pem)"),
+    tenant:    str = typer.Option(...,  "-t", "--tenant",   help="Tenant ID (Mandatory here, will be cached upon explicit use)"),
+    client_id: str = typer.Option(...,  "-c", "--client-id", help="Client ID (Mandatory here, will be cached upon explicit use)"),
+    cert:      str = typer.Option(...,  "-e", "--cert",     help="Path to certificate file (.pem/.crt) (Mandatory)"),
+    key:       str = typer.Option(...,  "-k", "--key",      help="Path to private key file (.pem) (Mandatory)"),
     keypass:   str = typer.Option(None, "-p", "--key-pass",  help="Passphrase for an encrypted private key (Optional)"),
     resource:  str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
     output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console (Optional)"),

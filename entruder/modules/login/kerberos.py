@@ -19,10 +19,10 @@ from ._shared import login_app, console
 @login_app.command("kerberos")
 @handle_cli_errors
 def login_kerberos(
-        tenant:        str = typer.Option(...,  "-t", "--tenant",  help="Tenant ID"),
-        client_id: str = typer.Option(...,  "-c", "--client-id", help="Client ID"),
+        tenant:        str = typer.Option(...,  "-t", "--tenant",  help="Tenant ID (will be cached upon explicit use)"),
+        client_id: str = typer.Option(...,  "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
         ccache: str = typer.Option(None,  "-a", "--ccache", help="The Kerberos ticket cache file needed for authentication (By Default will extract the $KRB5CCNAME environment variable)"),
-        domain: str = typer.Option(...,  "-d", "--domain",   help="AD domain (e.g. test.local)"),
+        domain: str = typer.Option(...,  "-d", "--domain",   help="AD domain (Mandatory, e.g. test.local)"),
         resource:  str = typer.Option(None, "-r", "--resource", help="Target resource (Optional, default: all planes)"),
         output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console (Optional)"),
         user_agent: str = typer.Option(None, "-u", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),

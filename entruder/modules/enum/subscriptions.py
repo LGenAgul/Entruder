@@ -17,8 +17,8 @@ from ._shared import enum_app, console, columns, prepare_session
 @enum_app.command("subscriptions")
 @handle_cli_errors
 def enum_subscriptions(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate subscriptions associated to this tenant (requires a management token)"""
@@ -51,10 +51,10 @@ def enum_subscriptions(
 @enum_app.command("resources")
 @handle_cli_errors
 def enum_resources(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id"),
-    type: str = typer.Option(None, "-y", "--type", help="Resource Type"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    sub: str = typer.Option(None, "-s", "--sub-id", help="Subscription Id of the target (Mandatory)"),
+    type: str = typer.Option(None, "-y", "--type", help="Resource Type (Optional) e.g. 'Microsoft.Web/sites'"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Enumerate resources within a subscription (requires a management token)"""

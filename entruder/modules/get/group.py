@@ -14,9 +14,9 @@ from ._shared import get_app, console, prepare_session, resolve_group_id, graph_
 @get_app.command("group")
 @handle_cli_errors
 def get_group(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    group: str = typer.Option(..., "-g", "--group-id", help="Group object id or displayName"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    group: str = typer.Option(..., "-g", "--group-id", help="Group object id or displayName (Mandatory)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Fetch a single group by object id or displayName via Microsoft Graph (requires a graph token)"""

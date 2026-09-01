@@ -14,10 +14,10 @@ from ._shared import set_app, console, prepare_session, resolve_user_id
 @set_app.command("password")
 @handle_cli_errors
 def set_password(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    user_id: str = typer.Option(..., "-u", "--user-id", help="User ID or userPrincipalName of the target user"),
-    password: str = typer.Option(..., "-p", "--password", help="New Password for the user"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    user_id: str = typer.Option(..., "-u", "--user-id", help="User ID or userPrincipalName of the target user (Mandatory)"),
+    password: str = typer.Option(..., "-p", "--password", help="New Password for the user (Mandatory)"),
 ):
     """Change a users password (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")

@@ -17,10 +17,10 @@ from ._shared import sharepoint_app, console, columns, prepare_session
 @sharepoint_app.command("sites")
 @handle_cli_errors
 def sharepoint_sites(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    batch_size: int = typer.Option(200, "--batch-size", help="Search API page size (capped at 1000)"),
-    max_sites: int = typer.Option(0, "--max-sites", help="Stop after this many unique sites (0 = no limit)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    batch_size: int = typer.Option(200, "--batch-size", help="Search API page size (capped at 1000) (Optional, default: 200)"),
+    max_sites: int = typer.Option(0, "--max-sites", help="Stop after this many unique sites (Optional, default: 0 = no limit)"),
     output: OutputFormat = output_option(),
     ):
     """Enumerate SharePoint sites visible to the current session via the Microsoft Search API (requires a graph token)."""

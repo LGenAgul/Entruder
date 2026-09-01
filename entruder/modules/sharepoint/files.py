@@ -17,17 +17,14 @@ from ._shared import sharepoint_app, console, columns, prepare_session
 @sharepoint_app.command("files")
 @handle_cli_errors
 def sharepoint_files(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    query: str = typer.Option(..., "-q", "--query", help="Search term or KQL query, e.g. 'password filetype:xlsx', 'confidential'"),
-    batch_size: int = typer.Option(25, "--batch-size", help="Search API page size (capped at 1000)"),
-    max_results: int = typer.Option(0, "--max-results", help="Stop after this many results (0 = no limit)"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    query: str = typer.Option(..., "-q", "--query", help="Search term or KQL query, e.g. 'password filetype:xlsx', 'confidential' (Mandatory)"),
+    batch_size: int = typer.Option(25, "--batch-size", help="Search API page size (capped at 1000) (Optional, default: 25)"),
+    max_results: int = typer.Option(0, "--max-results", help="Stop after this many results (Optional, default: 0 = no limit)"),
     output: OutputFormat = output_option(),
     ):
-    """Search file names/content across every SharePoint site and OneDrive drive visible to the
-    current session, via the Microsoft Search API (entityTypes: driveItem) — matches GraphRunner's
-    Invoke-SearchSharePointAndOneDrive. Accepts KQL (filetype:, filename:, etc). Each hit's Drive
-    Item ID (driveId:itemId) is the handle needed to fetch that file's content directly."""
+    """Search file names/content across every SharePoint site and OneDrive drive visible to the current session, via the Microsoft Search API"""
     tenant, headers = prepare_session(tenant, client_id, "graph")
 
     url = f"https://graph.microsoft.com/{API_VERSIONS['graph']}/search/query"

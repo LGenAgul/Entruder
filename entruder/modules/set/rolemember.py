@@ -14,10 +14,10 @@ from ._shared import set_app, console, prepare_session, resolve_user_id, resolve
 @set_app.command("role-member")
 @handle_cli_errors
 def set_roleMember(
-    tenant: str = typer.Option(None,    "-t", "--tenant"   , help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    role_id: str = typer.Option(...,    "-r", "--role-id"  , help="Role ID or display name to assign (e.g. 'Global Administrator')"),
-    user_id: str = typer.Option(...,    "-u", "--user-id"  , help="User ID or UPN of the user to add"),
+    tenant: str = typer.Option(None,    "-t", "--tenant"   , help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    role_id: str = typer.Option(...,    "-r", "--role-id"  , help="Role ID or display name to assign (e.g. 'Global Administrator') (Mandatory)"),
+    user_id: str = typer.Option(...,    "-u", "--user-id"  , help="User ID or UPN of the user to add (Mandatory)"),
     scope: str = typer.Option("/",      "-s", "--scope"    , help="Assignment scope (default: tenant-wide)"),
 ):
     """Add a user to a directory role (requires a graph token)"""

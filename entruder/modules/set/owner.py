@@ -14,10 +14,10 @@ from ._shared import set_app, console, prepare_session, resolve_user_id, resolve
 @set_app.command("owner")
 @handle_cli_errors
 def set_groupMember(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    app_id: str = typer.Option(..., "--appid", "-a", help="Application or Service Principal ID"),
-    user_id: str = typer.Option(..., "-u", "--user-id", help="User ID or UPN of the user to add"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    app_id: str = typer.Option(..., "--appid", "-a", help="Application or Service Principal ID to add the owner to (Mandatory)"),
+    user_id: str = typer.Option(..., "-u", "--user-id", help="User ID or UPN of the user to add (Mandatory)"),
 ):
     """Add a user as an owner of an application or service principal (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")

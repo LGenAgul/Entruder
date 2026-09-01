@@ -14,8 +14,8 @@ AZSYNC_USER_SELECT = (
 @azsync_app.command("users")
 @handle_cli_errors
 def azsync_users(
-        tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-        client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+        tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+        client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
         output: OutputFormat = output_option(),
 ):
     """Enumerate directory users that are synced from on-prem AD via AD Sync/Entra Connect (requires a graph token)"""

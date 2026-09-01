@@ -17,14 +17,13 @@ from ._shared import enum_app, console, columns, prepare_session
 @enum_app.command("sp")
 @handle_cli_errors
 def enum_serviceprincipals(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     owned: bool = typer.Option(False, "-w", "--owned",
-        help="Only show service principals owned by the current signed-in user "
+        help="Only show service principals owned by the current signed-in user (Optional) (requires a delegated session, ropc/device/authcode)"
              "(requires a delegated session, ropc/device/authcode, not app-only secret/cert/foci/kerberos)"),
     non_default: bool = typer.Option(False, "-n", "--non-default",
-        help="Hide Microsoft first-party service principals (Graph, Exchange Online, Teams, etc.) "
-             "to cut through the ~200-300 that exist by default in every tenant"),
+        help="Hide Microsoft first-party service principals (Graph, Exchange Online, Teams, etc.) (Optional) "),
     output: OutputFormat = output_option(),
     ):
     """Enumerate service principals via Microsoft Graph (requires a graph token)"""

@@ -17,10 +17,10 @@ from ._shared import login_app, console
 @login_app.command("device")
 @handle_cli_errors
 def login_device(
+    tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID (Mandatory here, will be cached upon explicit use)"),
+    client_id: str = typer.Option(..., "-c", "--client-id", help="Client ID (Mandatory here, will be cached upon explicit use)"),
     v2: bool = typer.Option(False, "-v", "--v2", help="Use v2 endpoint with scopes instead of resource, required for some tenants"),
     scopes: str = typer.Option("User.Read", "-s", "--scopes", help="Scopes for v2 endpoint, comma-separated"),
-    tenant: str = typer.Option(..., "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(..., "-c", "--client-id", help="Client ID"),
     resource: str = typer.Option("https://graph.microsoft.com/", "-r", "--resource", help="Resource ID"),
     output_tokens: bool = typer.Option(False, "-o", "--output", help="Output tokens to console"),
     user_agent: str = typer.Option(None, "-u", "--user-agent", help="Override the User-Agent header sent during authentication (Optional)"),

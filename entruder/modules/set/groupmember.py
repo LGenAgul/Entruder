@@ -14,10 +14,10 @@ from ._shared import set_app, console, prepare_session, resolve_user_id, resolve
 @set_app.command("group-member")
 @handle_cli_errors
 def set_groupMember(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    group_id: str = typer.Option(..., "-g", "--group-id", help="Group ID or display name to add the member to"),
-    user_id: str = typer.Option(..., "-u", "--user-id", help="User ID or UPN of the user to add"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    group_id: str = typer.Option(..., "-g", "--group-id", help="Group ID or display name to add the member to (Mandatory)"),
+    user_id: str = typer.Option(..., "-u", "--user-id", help="User ID or UPN of the user to add (Mandatory)"),
 ):
     """Add a user to a group (requires a graph token)"""
     tenant, headers = prepare_session(tenant, client_id, "graph")

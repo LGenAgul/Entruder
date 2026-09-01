@@ -14,10 +14,10 @@ from ._shared import set_app, console, prepare_session, resolve_user_id, resolve
 @set_app.command("app-role")
 @handle_cli_errors
 def set_app_role(
-    tenant: str = typer.Option(None, "--tenant", "-t", help="Tenant ID"),
-    client_id: str = typer.Option(None, "--clientid", "-c", help="Client ID"),
-    user_id: str = typer.Option(None, "--userid", "-u", help="User ID or UPN to assign the role to"),
-    sp_id: str = typer.Option(None, "--spid", "-s", help="Service Principal ID to assign the role to"),
+    tenant: str = typer.Option(None, "--tenant", "-t", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "--clientid", "-c", help="Client ID (will be cached upon explicit use)"),
+    user_id: str = typer.Option(None, "--userid", "-u", help="User ID or UPN to assign the role to (Mandatory if --spid is not provided)"),
+    sp_id: str = typer.Option(None, "--spid", "-s", help="Service Principal ID to assign the role to (Mandatory if --userid is not provided)"),
     resource_id: str = typer.Option(None, "--resourceid", "-r", help="Resource Service Principal ID (the app that defines the role); defaults to MS Graph's own SP"),
     role_id: str = typer.Option(..., "--roleid", "-R", help="App Role ID to assign, or a well-known MS Graph app role name (e.g. Mail.ReadWrite.All)"),
 ):

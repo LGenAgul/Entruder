@@ -20,8 +20,8 @@ from ._shared import enum_app, console, columns, prepare_session
 @enum_app.command("users")
 @handle_cli_errors
 def enum_users(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
     output: OutputFormat = output_option(),
 ):
     """Enumerate directory users via Microsoft Graph, using a saved graph session (requires a graph token)"""

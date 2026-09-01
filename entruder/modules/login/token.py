@@ -15,10 +15,10 @@ from ._shared import login_app, console
 @login_app.command("token")
 @handle_cli_errors
 def login_token(
-    token:         str = typer.Option(..., "-k", "--token", help="Raw access token obtained out-of-band (e.g. an internal metadata endpoint, a captured request, another tool)"),
-    tenant:        str = typer.Option(None, "-t", "--tenant", help="Tenant ID (Optional, default: read from the token's tid claim)"),
-    client_id:     str = typer.Option(None, "-c", "--client-id", help="Client ID to file the session under (Optional, default: read from the token's appid/azp claim)"),
-    resource:      str = typer.Option(None, "-r", "--resource", help="Plane/resource this token is for, e.g. graph (Optional, default: read from the token's aud claim)"),
+    token:         str = typer.Option(..., "-k", "--token", help="Raw access token obtained out-of-band (Mandatory)"),
+    tenant:        str = typer.Option(None, "-t", "--tenant", help="Tenant ID (Optional, default: read from the token's tid claim) (will be cached upon explicit use)"),
+    client_id:     str = typer.Option(None, "-c", "--client-id", help="Client ID to file the session under (Optional, default: reads from the token's appid claim) (will be cached upon explicit use)"),
+    resource:      str = typer.Option(None, "-r", "--resource", help="Plane/resource this token is for, e.g. graph (Optional, default: reads from the token's aud claim)"),
     refresh_token: str = typer.Option(None, "-e", "--refresh-token", help="Refresh token to store alongside it, if you have one (Optional)"),
     output_tokens: bool = typer.Option(False, "-o", "--output", help="Output the token to console (Optional)"),
 ):

@@ -23,9 +23,9 @@ from ._shared import get_app, console, columns, prepare_session, resolve_app_rol
 @get_app.command("user")
 @handle_cli_errors
 def get_user(
-    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
-    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID"),
-    username: str = typer.Option(...,"-u","--upn",help="userPrincipalName/email of the target user"),
+    tenant: str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
+    client_id: str = typer.Option(None, "-c", "--client-id", help="Client ID (will be cached upon explicit use)"),
+    username: str = typer.Option(...,"-u","--upn",help="userPrincipalName/email of the target user (Mandatory)"),
     output: OutputFormat = output_option(OutputFormat.json),
 ):
     """Query a specific user's information, provides more details than the enum users command (requires a graph token)"""

@@ -14,10 +14,10 @@ from ._shared import brute_app, console, classify_ropc_result
 @brute_app.command("uasweep")
 @handle_cli_errors
 def login_uasweep(
-    tenant:      str = typer.Option(None, "-t", "--tenant", help="Tenant ID"),
+    tenant:      str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
     username:    str = typer.Option(..., "-u", "--upn", help="Username"),
     password:    str = typer.Option(..., "-p", "--password", help="Password"),
-    client_id:   str = typer.Option(..., "-c", "--client-id", help="Client ID to authenticate with"),
+    client_id:   str = typer.Option(..., "-c", "--client-id", help="Client ID to authenticate with (will be cached upon explicit use)"),
     resource:    str = typer.Option("graph", "-r", "--resource", help="Target resource for the sweep (Optional, default: graph)"),
     user_agent:  str = typer.Option(None, "-a", "--user-agent", help="Test a single custom User-Agent instead of sweeping the built-in list"),
     unsafe:      bool = typer.Option(False, "-n", "--unsafe", help="Continue past an account-locked response instead of stopping immediately (Optional, risks worsening the lockout)"),
@@ -80,6 +80,8 @@ def login_uasweep(
             console.print(f"[bold red][-][/] {message}: stopping sweep")
             raise typer.Exit(1)
 
+      
+            
         if status == "locked":
             console.print(f"[bold red][-][/] {message}")
             if not unsafe:
