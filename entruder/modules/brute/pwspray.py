@@ -10,6 +10,7 @@ from entruder.utils import (
     request_json,
     vprint,
     require_tenant,
+    resolve_client_id
 )
 
 from ._shared import brute_app, console, classify_ropc_result
@@ -43,6 +44,7 @@ def brute_pwspray(
     Spray password(s) against a list of userPrincipalNames
     """
     tenant = require_tenant(tenant, console)
+    client_id = resolve_client_id(client_id)
     resource_url = MFA_SWEEP_RESOURCES.get(resource, resource)
 
     if bool(user) == bool(userlist):
