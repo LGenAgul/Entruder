@@ -327,13 +327,17 @@ entruder brute users -d <DOMAIN_NAME> -l <PATH_TO_WORDLIST>
 ```
 <img width="804" height="199" alt="image" src="https://github.com/user-attachments/assets/ade197d4-f735-495c-8f8f-5a44ed0dcdcf" />
 
-### BruteForcing the user's password
-After discovering a valid user we can put their UPN in a list and conduct a password attack against them
+### Password Spraying
+After discovering valid users we can spray a password list across them using brute pwspray
 ```bash
 entruder brute pwspray -u <USER_LIST> --passwords <PASSWORD_LIST> -t <TENANT_ID> -c <CLIENT_ID>
 ```
-<img width="1179" height="154" alt="image" src="https://github.com/user-attachments/assets/b4d59f91-cfa9-4c49-af1b-ffbb877bb22a" />
+In the below example we can see that a valid password is discovered, with Entruder warning us that the user must be enrolled in MFA upon a successful login.
+<img width="1288" height="213" alt="image" src="https://github.com/user-attachments/assets/70fa0c2a-1563-485f-a384-08091d04e3b4" />
 
+A successful login against an account without MFA enrolled means we can register our own authenticator app as the MFA method, giving us persistent authenticated access to the account.
+
+### Device Login
 
 
 
