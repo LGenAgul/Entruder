@@ -332,14 +332,30 @@ After discovering valid users we can spray a password list across them using bru
 ```bash
 entruder brute pwspray -u <USER_LIST> --passwords <PASSWORD_LIST> -t <TENANT_ID> -c <CLIENT_ID>
 ```
-In the below example we can see that a valid password is discovered, with Entruder warning us that the user must be enrolled in MFA upon a successful login.
-<img width="1288" height="213" alt="image" src="https://github.com/user-attachments/assets/70fa0c2a-1563-485f-a384-08091d04e3b4" />
+In the below example we can see that a valid password is discovered, with no MFA enforcement.
+<img width="1646" height="177" alt="image" src="https://github.com/user-attachments/assets/edc56517-f1bd-4599-81a0-842f49fa5816" />
 
-A successful login against an account without MFA enrolled means we can register our own authenticator app as the MFA method, giving us persistent authenticated access to the account.
+### Login
+Now with a set of valid credentials we can authenticate to relevant resource planes and retrieve an access token for each, they will be stored in a session file in `/home/<USER>/.entruder/sessions/`
+```bash
+entruder login ropc -t <CLIENT_ID> -c <CLIENT_ID> -u '<UPN>' -p '<PASSWORD>'
+```
+<img width="1861" height="223" alt="image" src="https://github.com/user-attachments/assets/94d4c606-ab70-46f6-8bdc-3d647cdab2de" />
 
-### Device Login
+### Tenant Enumeration
+We can begin enumeration by getting a list of subscriptions, an example below shows a single subscription with its respective id, which will be used as an argument in further commands
+```bash
+entruder enum subscriptions
+```
+<img width="777" height="525" alt="image" src="https://github.com/user-attachments/assets/c8188a1c-f7a7-46e6-a78c-eae725615d6c" />
 
-
+### Privilege Enumeration
+We can enumerate the user's tenant-wide privileges including their group memberships, directory roles and owned objects with Entruder
+```bash
+entruder enum privs -s <SUBSCRIPTION_ID>
+```
+<img width="2044" height="398" alt="image" src="https://github.com/user-attachments/assets/ad061c3b-e4bd-499a-874c-dfe871d83142" />
+The output shows that our user possesses the `Global Administrator` role which means they possess the highest privileges inside the tenant.
 
 [python-shield]: https://img.shields.io/badge/python-3.10+-blue.svg?style=for-the-badge
 [contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
