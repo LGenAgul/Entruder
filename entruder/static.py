@@ -329,3 +329,49 @@ DIRECTORY_ROLES = {
 }
 
 DIRECTORY_ROLE_TIER_ORDER = ["critical", "high", "medium", "low"]
+
+# Azure RBAC (ARM) built-in role definition IDs — the GUID is constant across
+# every tenant/subscription (built-in roles live in the platform, not the
+# tenant), so `set arm-role` can accept a friendly name and map it to the id
+# without a lookup call. Keys are lowercased and space-stripped to match the
+# `role.lower().replace(" ", "")` normalization at the call site. Covers the
+# generic management roles plus the storage/Key Vault/compute data-plane roles
+# most useful for privilege escalation and lateral movement during an
+# assessment — not exhaustive; pass a raw role definition GUID for anything else.
+# Source: https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+WELL_KNOWN_ARM_ROLES = {
+    # --- Generic management-plane ---
+    "owner":                              "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+    "contributor":                        "b24988ac-6180-42a0-ab88-20f7382dd24c",
+    "reader":                             "acdd72a7-3385-48ef-bd42-f606fba81ae7",
+    "useraccessadministrator":            "18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+    "rolebasedaccesscontroladministrator": "f58310d9-a9f6-439a-9e8d-f62e7b41a168",
+    "managedidentityoperator":            "f1a07417-d97a-45cb-824c-7a7467783830",
+
+    # --- Storage (management + data plane) ---
+    "storageaccountcontributor":          "17d1049b-9a84-46fb-8f53-869881c3d3ab",
+    "storageblobdataowner":               "b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+    "storageblobdatacontributor":         "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+    "storageblobdatareader":              "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1",
+    "storagequeuedatacontributor":        "974c5e8b-45b9-4653-ba55-5f855dd0fb88",
+    "storagefiledatasmbsharecontributor": "0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb",
+
+    # --- Key Vault (data plane, RBAC-authorized vaults) ---
+    "keyvaultadministrator":              "00482a5a-887f-4fb3-b363-3b7fe8e74483",
+    "keyvaultsecretsofficer":             "b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+    "keyvaultsecretsuser":                "4633458b-17de-408a-b874-0445c86b69e6",
+    "keyvaultcertificatesofficer":        "a4417e6f-fecd-4de8-b567-7b0420556985",
+    "keyvaultcryptouser":                 "12338af0-0e69-4776-bea7-57ae8d297424",
+
+    # --- Compute / login ---
+    "virtualmachinecontributor":          "9980e02c-c2be-4d73-94e8-173b1dc7cf3c",
+    "virtualmachineadministratorlogin":   "1c0163c0-47e6-4577-8991-ea5c82e286e4",
+    "virtualmachineuserlogin":            "fb879df8-f326-4884-b1cf-06f3ad86be52",
+
+    # --- Networking / monitoring / platform ---
+    "networkcontributor":                 "4d97b98b-1d4f-4787-a291-c67834d212e7",
+    "monitoringreader":                   "43d0d8ad-25c7-4714-9337-8ba259a9fe05",
+    "loganalyticscontributor":            "92aaf0da-9dab-42b6-94a3-d43ce8d16293",
+    "automationcontributor":              "f353d9bd-d4a6-484e-a77a-8050b599b867",
+    "websitecontributor":                 "de139f84-1756-47ae-9be6-808fbbe84772",
+}

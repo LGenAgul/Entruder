@@ -10,5 +10,6 @@ from . import (
     rolemember,
     approle,
     appsecret,
-    owner
+    owner,
+    arm_role,
 )
