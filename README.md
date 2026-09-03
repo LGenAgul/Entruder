@@ -228,7 +228,8 @@ The info module provides general tool information and offline analysis commands.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 ## Installation
-You can clone the repository and use the tool via python3.10+
+You can clone the repository and use the tool via python3.12+
+
 ```bash
 git clone https://github.com/LGenAgul/Entruder
 cd Entruder
@@ -587,7 +588,7 @@ Open a GitHub issue with:
 - The error or unexpected output
 - Your Python version and OS
 
-[python-shield]: https://img.shields.io/badge/python-3.10+-blue.svg?style=for-the-badge
+[python-shield]: https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge
 [contributors-shield]: https://img.shields.io/github/contributors/LGenAgul/Entruder.svg?style=for-the-badge
 [contributors-url]: https://github.com/LGenAgul/Entruder/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/LGenAgul/Entruder.svg?style=for-the-badge
