@@ -139,6 +139,15 @@ class Columns:
         ("Tags", "tags")
     ]
 
+    RESOURCE_RA = [
+        ("Role",           "roleName"),
+        ("Principal",      "principalName"),
+        ("Principal Id",   "principalId"),
+        ("Principal Type", "principalType"),
+        ("Scope",          "scope"),
+        ("Assignment Id",  "roleAssignmentId"),
+    ]
+
    
     OWNED = [
         ("Type",         "_type"),
