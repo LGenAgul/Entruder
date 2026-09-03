@@ -1,5 +1,3 @@
-<img width="1200" height="600" alt="demo" src="https://github.com/user-attachments/assets/8cabdb2a-370b-4989-b809-909a7dbb2b99" /><a id="readme-top"></a>
-
 ![python-shield]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
