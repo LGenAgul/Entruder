@@ -467,7 +467,7 @@ Etag          : 0x8DF098F859694A8
 ```
 And Finally we can download the blob directly
 ```bash
-entruder.py get blob -a beststorageintheworld -n secretscontainer -b Secrets.pdf > secrets.pdf
+entruder get blob -a beststorageintheworld -n secretscontainer -b Secrets.pdf > secrets.pdf
 ```
 
 ### Compute Exploitation
