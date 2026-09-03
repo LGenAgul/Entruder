@@ -317,7 +317,8 @@ entruder login ropc -t <TENANT_ID> -c azurecli
 </table>
 
 ### Basic Engagement via Entruder
-<img width="1200" height="600" alt="demo" src="https://github.com/user-attachments/assets/527fa777-33fe-4546-af48-74d8cd8cb1fb" />
+<img width="1200" height="600" alt="demo" src="https://github.com/user-attachments/assets/bdda7371-4cf7-4ce4-99ab-5235eb362a0b" />
+
 
 #### Get a Tenant ID from a domain
 The testing flow generally begins by enumerating the Tenant ID from their domain name, this can be done in Entruder through:
