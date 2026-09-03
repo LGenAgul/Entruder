@@ -33,8 +33,9 @@
 1. [About The Project](#about-the-project)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Contributing](#contributing)
-5. [Acknowledgments](#acknowledgments)
+4. [Examples](#examples)
+5. [Contributing](#contributing)
+6. [Acknowledgments](#acknowledgments)
 
 
 ## About The Project
