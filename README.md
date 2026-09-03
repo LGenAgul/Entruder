@@ -227,7 +227,9 @@ The info module provides general tool information and offline analysis commands.
 </details>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Installation
+
 You can clone the repository and use the tool via python3.12+
 
 ```bash
