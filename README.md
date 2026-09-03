@@ -502,7 +502,7 @@ BJ-ee7kTVXZLqAoFDeXShS5vYBo8nGDIQsdnukB8coAAd6TR5C9G9fuodcEoQgGs8n0V3_F8PA", "ex
 "9596a20b-f997-4a1f-99ea-c045e0ef6d71"}
 ```
 
-## Acknowledgements
+## Acknowledgments
 This tool was built upon techniques and research offered by the following 
 projects. Kudos to their creators for the outstanding work:
 - **[AADInternals](https://github.com/Gerenios/AADInternals)** by Dr. Nestori Syynimaa - the foundational reference 
