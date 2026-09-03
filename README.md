@@ -127,6 +127,7 @@ By far the bulkiest module, providing enumeration commands against most Entra ID
 | automation-accounts | Enumerate Automation Accounts in a subscription |
 | runbooks | List runbooks in an Automation Account |
 | automation-variables | List variables in an Automation Account |
+| rbac | List ARM role assignments for a specific resource  |
 
 </details>
 
@@ -162,6 +163,7 @@ Provides commands for modifying objects and their attributes. Primarily used for
 | role-member | Add a user to a directory role |
 | app-role | Assign an app role to a user or service principal |
 | app-secret | Add a client secret to an application (auth as that app's service principal) |
+| arm-role | Add an ARM role assignment against a management resource  |
 
 </details>
 
