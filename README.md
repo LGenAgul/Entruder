@@ -558,7 +558,7 @@ pip install winkerberos
 
 If you prefer not to manage Python dependencies, pre-built binaries for 
 Linux, macOS, and Windows are available in the 
-[releases](https://github.com/LGenAgul/Entruder/releases) page — 
+[releases](https://github.com/LGenAgul/Entruder/releases) page, 
 no Python installation required.
 
 ## Contributing
